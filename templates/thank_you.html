@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thank You</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .thank-you-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .thank-you-wrapper {
+            width: 100%;
+            max-width: 480px; /* Reduced from 600px */
+            position: relative;
+        }
+        
+        .thank-you-header {
+            background-color: #2b57a5; /* Brand blue */
+            text-align: center;
+            padding: 20px 0; /* Reduced padding */
+            border-radius: 10px 10px 0 0;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .thank-you-logo {
+            max-height: 80px; /* Reduced from 100px */
+            margin: 0 auto 10px; /* Reduced margin */
+            display: block;
+        }
+        
+        .thank-you-card {
+            border-top-left-radius: 0 !important;
+            border-top-right-radius: 0 !important;
+            margin-top: -1px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 5;
+            padding: 30px 20px; /* Reduced padding */
+            text-align: center;
+        }
+        
+        .thank-you-card h2 {
+            color: #60ae56;
+            margin: 15px 0; /* Reduced margin */
+            font-weight: 700;
+            font-size: 1.8rem; /* Slightly smaller */
+        }
+        
+        .thank-you-card p {
+            font-size: 1.1rem; /* Slightly smaller */
+            margin-bottom: 20px; /* Reduced margin */
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .btn-brand-lg {
+            padding: 10px 25px; /* Slightly smaller */
+            font-size: 1rem; /* Slightly smaller */
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .explore-section {
+            background-color: #f0f7ff;
+            border-radius: 8px;
+            padding: 15px; /* Reduced padding */
+            margin-top: 25px; /* Reduced margin */
+            border-top: 3px solid #2b57a5;
+        }
+        
+        .explore-section h3 {
+            color: #2b57a5;
+            margin-bottom: 12px; /* Reduced margin */
+            font-size: 1.3rem; /* Slightly smaller */
+        }
+        
+        .countdown {
+            font-size: 1.3rem; /* Slightly smaller */
+            font-weight: 700;
+            color: #60ae56;
+            margin: 12px 0; /* Reduced margin */
+        }
+        
+        .explore-link {
+            font-size: 1rem; /* Slightly smaller */
+            color: #2b57a5;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .explore-link:hover {
+            color: #60ae56;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="thank-you-container">
+        <div class="thank-you-wrapper">
+            <!-- Header with logo -->
+            <div class="thank-you-header">
+                <img src="{{ url_for('static', filename='envirocare_logo.png') }}" 
+                     alt="Envirocare Logo" 
+                     class="thank-you-logo">
+            </div>
+            
+            <!-- Thank you card -->
+            <div class="card thank-you-card">
+                <h2>Thank You!</h2>
+                <p>Your enquiry has been submitted successfully. Our Expert will contact you shortly.</p>
+                <a href="/" class="btn btn-brand btn-brand-lg">Return to Form</a>
+                
+                <!-- Explore our services section -->
+                <div class="explore-section">
+                    <h3>Explore our services</h3>
+                    <p>You'll be redirected to our website in</p>
+                    <div class="countdown" id="countdown">10 seconds</div>
+                    <p>Or visit now: 
+                        <a href="https://www.envirocarelabs.com" 
+                           class="explore-link"
+                           target="_blank">
+                            www.envirocarelabs.com
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Countdown timer function
+        function startCountdown() {
+            let seconds = 10;
+            const countdownElement = document.getElementById('countdown');
+            
+            const countdownInterval = setInterval(function() {
+                seconds--;
+                countdownElement.textContent = seconds + " second" + (seconds !== 1 ? "s" : "");
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = "https://www.envirocarelabs.com";
+                }
+            }, 1000);
+        }
+        
+        // Start the countdown when page loads
+        document.addEventListener('DOMContentLoaded', startCountdown);
+    </script>
+</body>
+</html>

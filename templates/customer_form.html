@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shelf Life Study Enquiry</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .form-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .form-wrapper {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+        
+        .form-header {
+            background-color: #60ae56; /* Brand green */
+            text-align: center;
+            padding: 20px 0;
+            border-radius: 10px 10px 0 0;
+            z-index: 10;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .brand-logo {
+            max-height: 80px;
+            margin: 0 auto 10px;
+            display: block;
+        }
+        
+        .form-heading {
+            color: white;
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .form-card {
+            border-top-left-radius: 0 !important;
+            border-top-right-radius: 0 !important;
+            margin-top: -1px; /* Ensures seamless connection */
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 5;
+            padding: 20px;
+        }
+        
+        .section-card {
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .section-card .card-header {
+            background-color: #2b57a5; /* Brand blue */
+            font-size: 1.2rem;
+            padding: 12px 20px;
+        }
+        
+        .required-label::after {
+            content: " *";
+            color: #e32;
+        }
+        
+        .btn-brand-lg {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-wrapper">
+            <!-- Header with logo -->
+            <div class="form-header">
+                <img src="{{ url_for('static', filename='envirocare_logo.png') }}" 
+                     alt="Envirocare Logo" 
+                     class="brand-logo">
+                <h2 class="form-heading">Shelf Life Study Enquiry Form</h2>
+            </div>
+            
+            <!-- Form card -->
+            <div class="card form-card">
+                <form action="/submit" method="POST">
+                    <!-- Contact Information -->
+                    <div class="card section-card">
+                        <div class="card-header">Contact Information</div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="required-label">Company Name</label>
+                                <input type="text" name="company" class="form-control" required>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-label">Contact Person</label>
+                                        <input type="text" name="contact_person" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-label">Designation</label>
+                                        <input type="text" name="designation" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-label">Contact Number</label>
+                                        <input type="tel" name="phone" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-label">Email ID</label>
+                                        <input type="email" name="email" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Information -->
+                    <div class="card section-card">
+                        <div class="card-header">Product Information</div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="required-label">Product Name</label>
+                                <input type="text" name="product_name" class="form-control" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required-label">List of Ingredients</label>
+                                <textarea name="ingredients" class="form-control" rows="3" required></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-label">Product Category</label>
+                                        <input type="text" name="category" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="required-label">Packaging Material</label>
+                                        <input type="text" name="packaging" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="required-label">Sample Quantity (Weight)</label>
+                                        <input type="text" name="quantity" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="required-label">Packaging Dimensions</label>
+                                        <input type="text" name="dimensions" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Expected Shelf Life</label>
+                                        <input type="text" name="expected_shelf_life" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required-label">Storage Conditions</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="storage_condition" value="Ambient" id="ambient">
+                                    <label class="form-check-label" for="ambient">Ambient</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="storage_condition" value="Refrigerated" id="refrigerated">
+                                    <label class="form-check-label" for="refrigerated">Refrigerated</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="storage_condition" value="Frozen" id="frozen">
+                                    <label class="form-check-label" for="frozen">Frozen</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Specific Temperature/Humidity Requirements</label>
+                                <input type="text" name="temp_humidity" class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Manufacturing Process</label>
+                                <input type="text" name="process" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Study Details -->
+                    <div class="card section-card">
+                        <div class="card-header">Study Details</div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="required-label">Testing Condition</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="testing_condition" value="Real time" id="real_time" required>
+                                    <label class="form-check-label" for="real_time">Real time</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="testing_condition" value="Accelerated" id="accelerated">
+                                    <label class="form-check-label" for="accelerated">Accelerated</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required-label">Reason for Shelf Life Testing</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="reason" value="New Product" id="new_product" required>
+                                    <label class="form-check-label" for="new_product">New Product</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="reason" value="Change in Formula" id="formula_change">
+                                    <label class="form-check-label" for="formula_change">Change in Formula/Ingredients/Processing/Packaging</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="reason" value="Verification" id="verification">
+                                    <label class="form-check-label" for="verification">Verification of Current Shelf Life</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="reason" value="FSSA" id="fssa">
+                                    <label class="form-check-label" for="fssa">FSSA (Non-compliance Case)</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="required-label">Analysis Type</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="analysis_type" value="Microbiological" id="micro">
+                                    <label class="form-check-label" for="micro">Microbiological</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="analysis_type" value="Chemical" id="chemical">
+                                    <label class="form-check-label" for="chemical">Chemical</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="analysis_type" value="Sensory" id="sensory">
+                                    <label class="form-check-label" for="sensory">Sensory</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Label Claims (if any)</label>
+                                <textarea name="label_claims" class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-brand btn-brand-lg">Submit Enquiry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

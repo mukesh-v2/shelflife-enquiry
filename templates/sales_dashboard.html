@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sales Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Add jQuery and Bootstrap JS for dropdown functionality -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='envirocare_logo.png') }}" alt="Envirocare Logo" style="max-height: 60px; margin-right: 10px;">
+                Shelf Life Study Portal
+            </a>
+            <div class="ml-auto">
+                <a href="/analytics" class="btn btn-light ml-2">Analytics</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-light">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="my-4">Enquiries Dashboard</h2>
+        
+        <!-- Filter Form -->
+        <form method="GET" class="mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" name="company" class="form-control" 
+                               placeholder="Search by company..." 
+                               value="{{ request.args.get('company', '') }}">
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-brand">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Enquiries Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <div class="d-flex align-items-center">
+                                        <span>Company</span>
+                                        <div class="dropdown ml-1">
+                                            <button class="btn btn-sm btn-link p-0"
+                                                    type="button"
+                                                    id="companyFilterDropdown"
+                                                    data-toggle="dropdown"
+                                                    aria-haspopup="true"
+                                                    aria-expanded="false">
+                                                <i class="fas fa-filter {% if request.args.get('company_filter') %}text-success{% endif %}"></i>
+                                            </button>
+                                            <div class="dropdown-menu" aria-labelledby="companyFilterDropdown">
+                                                <a class="dropdown-item {% if not request.args.get('company_filter') %}active{% endif %}"
+                                                   href="{{ url_for('dashboard', stage=request.args.get('stage', ''), product_filter=request.args.get('product_filter', '')) }}">All Companies</a>
+                                                <div class="dropdown-divider"></div>
+                                                {% for company_name in unique_companies %}
+                                                <a class="dropdown-item {% if request.args.get('company_filter') == company_name %}active{% endif %}"
+                                                   href="{{ url_for('dashboard', company_filter=company_name, stage=request.args.get('stage', ''), product_filter=request.args.get('product_filter', '')) }}">{{ company_name }}</a>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="d-flex align-items-center">
+                                        <span>Product</span>
+                                        <div class="dropdown ml-1">
+                                            <button class="btn btn-sm btn-link p-0"
+                                                    type="button"
+                                                    id="productFilterDropdown"
+                                                    data-toggle="dropdown"
+                                                    aria-haspopup="true"
+                                                    aria-expanded="false">
+                                                <i class="fas fa-filter {% if request.args.get('product_filter') %}text-success{% endif %}"></i>
+                                            </button>
+                                            <div class="dropdown-menu" aria-labelledby="productFilterDropdown">
+                                                <a class="dropdown-item {% if not request.args.get('product_filter') %}active{% endif %}"
+                                                   href="{{ url_for('dashboard', stage=request.args.get('stage', ''), company_filter=request.args.get('company_filter', '')) }}">All Products</a>
+                                                <div class="dropdown-divider"></div>
+                                                {% for product_name in unique_products %}
+                                                <a class="dropdown-item {% if request.args.get('product_filter') == product_name %}active{% endif %}"
+                                                   href="{{ url_for('dashboard', product_filter=product_name, stage=request.args.get('stage', ''), company_filter=request.args.get('company_filter', '')) }}">{{ product_name }}</a>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="d-flex align-items-center">
+                                        <span>Stage</span>
+                                        <!-- Fixed filter button with proper dropdown -->
+                                        <div class="dropdown ml-1">
+                                            <button class="btn btn-sm btn-link p-0" 
+                                                    type="button" 
+                                                    id="stageFilterDropdown" 
+                                                    data-toggle="dropdown" 
+                                                    aria-haspopup="true" 
+                                                    aria-expanded="false">
+                                                <i class="fas fa-filter {% if request.args.get('stage') %}text-success{% endif %}"></i>
+                                            </button>
+                                            <div class="dropdown-menu" aria-labelledby="stageFilterDropdown">
+                                                <a class="dropdown-item {% if not request.args.get('stage') %}active{% endif %}" 
+                                                   href="{{ url_for('dashboard', company=request.args.get('company', ''), company_filter=request.args.get('company_filter', ''), product_filter=request.args.get('product_filter', '')) }}">All Stages</a>
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item {% if request.args.get('stage') == 'Enquiry Received' %}active{% endif %}" 
+                                                   href="{{ url_for('dashboard', company=request.args.get('company', ''), stage='Enquiry Received', company_filter=request.args.get('company_filter', ''), product_filter=request.args.get('product_filter', '')) }}">Enquiry Received</a>
+                                                <a class="dropdown-item {% if request.args.get('stage') == 'Qualified' %}active{% endif %}" 
+                                                   href="{{ url_for('dashboard', company=request.args.get('company', ''), stage='Qualified', company_filter=request.args.get('company_filter', ''), product_filter=request.args.get('product_filter', '')) }}">Qualified</a>
+                                                <a class="dropdown-item {% if request.args.get('stage') == 'Unqualified' %}active{% endif %}" 
+                                                   href="{{ url_for('dashboard', company=request.args.get('company', ''), stage='Unqualified', company_filter=request.args.get('company_filter', ''), product_filter=request.args.get('product_filter', '')) }}">Unqualified</a>
+                                                <a class="dropdown-item {% if request.args.get('stage') == 'Converted' %}active{% endif %}" 
+                                                   href="{{ url_for('dashboard', company=request.args.get('company', ''), stage='Converted', company_filter=request.args.get('company_filter', ''), product_filter=request.args.get('product_filter', '')) }}">Converted</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enquiry in enquiries %}
+                            <tr>
+                                <td>{{ enquiry.contact_info.company }}</td>
+                                <td>{{ enquiry.product_info.name }}</td>
+                                <td>
+                                    <span class="badge badge-primary">{{ enquiry.current_stage }}</span>
+                                </td>
+                                <td>{{ enquiry.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('enquiry_detail', id=enquiry._id) }}" 
+                                       class="btn btn-sm btn-outline-primary">View</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">No enquiries found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Core Flask dependencies
+Flask==2.0.3
+Flask-Login==0.5.0
+Flask-WTF==1.0.0
+
+# Database and MongoDB support
+pymongo==4.3.3
+dnspython==2.3.0  # For MongoDB SRV connections
+
+# Security and sanitization
+Werkzeug==2.0.3
+bleach==5.0.1
+
+# Environment management
+python-dotenv==0.21.0
+
+# Additional utilities
+requests==2.28.1  # Optional for future API integrations

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analytics Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analytics-container {
+            padding: 20px;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .card {
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: none;
+            border-radius: 10px;
+        }
+        
+        .card-header {
+            background-color: #2b57a5;
+            color: white;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            padding: 15px;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            min-width: 200px;
+            margin: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2b57a5;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .stat-trend {
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .trend-up {
+            color: #60ae56;
+        }
+        
+        .trend-down {
+            color: #e74c3c;
+        }
+        
+        .filter-bar {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='envirocare_logo.png') }}" alt="Envirocare Logo" style="max-height: 60px; margin-right: 10px;">
+                Shelf Life Study Analytics
+            </a>
+            <div class="ml-auto">
+                <a href="/dashboard" class="btn btn-light">Dashboard</a>
+                <a href="/logout" class="btn btn-light ml-2">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="analytics-container">
+        <div class="container">
+            <h2 class="mb-4">Enquiry Analytics</h2>
+            
+            <div class="filter-bar">
+                <div class="row">
+                    <div class="col-md-3">
+                        <select class="form-control" id="timeFilter">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="365">Last Year</option>
+                            <option value="all">All Time</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-control" id="categoryFilter">
+                            <option value="all">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-brand btn-block" id="applyFilters">
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <div class="stat-label">Total Enquiries</div>
+                    <div class="stat-value" id="totalEnquiries">0</div>
+                    <div class="stat-trend trend-up" id="enquiryTrend">Loading...</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Conversion Rate</div>
+                    <div class="stat-value" id="conversionRate">0%</div>
+                    <div class="stat-trend trend-up" id="conversionTrend">Loading...</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Avg. Response Time</div>
+                    <div class="stat-value" id="avgResponse">0h</div>
+                    <div class="stat-trend trend-down" id="responseTrend">Loading...</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Active Enquiries</div>
+                    <div class="stat-value" id="activeEnquiries">0</div>
+                    <div class="stat-trend trend-up" id="activeTrend">Loading...</div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            Enquiry Stage Distribution
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="stageChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            Category Distribution
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            Enquiries Over Time
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="timelineChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            Top Products
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="productsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    // Establish WebSocket connection
+    const socket = io();
+
+    // Initialize Charts
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to load data via AJAX
+        function loadAnalyticsData() {
+            const timeFilter = document.getElementById('timeFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            fetch(`/analytics/data?days=${timeFilter}&category=${categoryFilter}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateSummaryStats(data.stats);
+                    updateCharts(data);
+                })
+                .catch(error => {
+                    console.error('Error loading analytics data:', error);
+                });
+        }
+        
+        // Update summary statistics
+        function updateSummaryStats(stats) {
+            document.getElementById('totalEnquiries').textContent = stats.total_enquiries;
+            document.getElementById('conversionRate').textContent = stats.conversion_rate + '%';
+            document.getElementById('avgResponse').textContent = stats.avg_response + 'h';
+            document.getElementById('activeEnquiries').textContent = stats.active_enquiries;
+            
+            document.getElementById('enquiryTrend').textContent = stats.enquiry_trend;
+            document.getElementById('conversionTrend').textContent = stats.conversion_trend;
+            document.getElementById('responseTrend').textContent = stats.response_trend;
+            document.getElementById('activeTrend').textContent = stats.active_trend;
+            
+            // Update trend colors
+            document.getElementById('enquiryTrend').className = 
+                'stat-trend ' + (stats.enquiry_trend.includes('+') ? 'trend-up' : 'trend-down');
+            document.getElementById('conversionTrend').className = 
+                'stat-trend ' + (stats.conversion_trend.includes('+') ? 'trend-up' : 'trend-down');
+            document.getElementById('responseTrend').className = 
+                'stat-trend ' + (stats.response_trend.includes('-') ? 'trend-down' : 'trend-up');
+            document.getElementById('activeTrend').className = 
+                'stat-trend ' + (stats.active_trend.includes('+') ? 'trend-up' : 'trend-down');
+        }
+        
+        // Initialize charts
+        const stageChart = new Chart(
+            document.getElementById('stageChart').getContext('2d'), 
+            { type: 'doughnut', data: { datasets: [{}] } }
+        );
+        
+        const categoryChart = new Chart(
+            document.getElementById('categoryChart').getContext('2d'), 
+            { type: 'bar', data: { datasets: [{}] } }
+        );
+        
+        const timelineChart = new Chart(
+            document.getElementById('timelineChart').getContext('2d'), 
+            { type: 'line', data: { datasets: [{}] } }
+        );
+        
+        const productsChart = new Chart(
+            document.getElementById('productsChart').getContext('2d'), 
+            { type: 'pie', data: { datasets: [{}] } }
+        );
+        
+        // Update charts with new data
+        function updateCharts(data) {
+            // Stage Distribution Chart
+            stageChart.data = {
+                labels: data.stage_labels,
+                datasets: [{
+                    data: data.stage_data,
+                    backgroundColor: [
+                        '#2b57a5', '#60ae56', '#f39c12', '#e74c3c', 
+                        '#9b59b6', '#1abc9c', '#3498db', '#f1c40f'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            stageChart.update();
+            
+            // Category Distribution Chart
+            categoryChart.data = {
+                labels: data.category_labels,
+                datasets: [{
+                    label: 'Number of Enquiries',
+                    data: data.category_data,
+                    backgroundColor: '#60ae56',
+                    borderColor: '#4d8c44',
+                    borderWidth: 1
+                }]
+            };
+            categoryChart.options.scales.y = { beginAtZero: true };
+            categoryChart.update();
+            
+            // Timeline Chart
+            timelineChart.data = {
+                labels: data.timeline_labels,
+                datasets: [{
+                    label: 'Enquiries',
+                    data: data.timeline_data,
+                    fill: true,
+                    backgroundColor: 'rgba(43, 87, 165, 0.1)',
+                    borderColor: '#2b57a5',
+                    tension: 0.3
+                }]
+            };
+            timelineChart.options.scales.y = { beginAtZero: true };
+            timelineChart.update();
+            
+            // Top Products Chart
+            productsChart.data = {
+                labels: data.product_labels,
+                datasets: [{
+                    data: data.product_data,
+                    backgroundColor: [
+                        '#2b57a5', '#3498db', '#1abc9c', '#60ae56', '#f39c12'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            productsChart.update();
+        }
+        
+        // Initial load
+        loadAnalyticsData();
+        
+        // Filter functionality
+        document.getElementById('applyFilters').addEventListener('click', loadAnalyticsData);
+        
+        // Listen for real-time data updates via WebSocket
+        socket.on('analytics_update', function(data) {
+            updateSummaryStats(data.stats);
+            updateCharts(data);
+        });
+    });
+</script>
+</body>
+</html>
