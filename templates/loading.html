@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envirocare Labs - Loading</title>
+    <style>
+        :root {
+            --primary-color: #2b57a5;
+            --secondary-color: #f8f9fa;
+            --accent-color: #60ae56;
+            --text-color: #333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            z-index: 1;
+            transform: translateY(-20px);
+            opacity: 0;
+            animation: fadeIn 0.8s forwards ease-out;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo-container {
+            margin-bottom: 2rem;
+            animation: float 3s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .logo {
+            max-width: 120px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .loading-text {
+            color: var(--text-color);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid var(--secondary-color);
+            border-top: 6px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary-color);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        
+        .subtext {
+            font-size: 0.9rem;
+            color: #6c757d;
+            opacity: 0.8;
+        }
+        
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <div class="container">
+        <div class="spinner"></div>
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        
+        <div class="logo-container">
+            <img 
+                src="{{ url_for('static', filename='envirocare_logo.png') }}" 
+                alt="Envirocare Labs" 
+                class="logo"
+                onerror="this.style.display='none'"
+            />
+        </div>
+        
+        <h1>Envirocare Labs</h1>
+        <p class="loading-text">Loading your shelf-life study portal...</p>
+        <p class="subtext">Please wait a moment while we prepare everything</p>
+    </div>
+
+    <script>
+        function checkReady() {
+            fetch("/customer_form", { method: "HEAD" })
+                .then((resp) => {
+                    if (resp.status === 200) {
+                        // Animate completion
+                        const progressBar = document.querySelector('.progress-bar');
+                        progressBar.style.width = '100%';
+                        
+                        setTimeout(() => {
+                            window.location.href = "/customer_form";
+                        }, 500);
+                    } else {
+                        setTimeout(checkReady, 500);
+                    }
+                })
+                .catch(() => {
+                    // If the fetch fails (app not ready), retry in 500 ms
+                    setTimeout(checkReady, 500);
+                });
+        }
+        
+        // Start polling immediately:
+        checkReady();
+        
+        // Additional animation for progress bar
+        const progressBar = document.querySelector('.progress-bar');
+        let width = 0;
+        const interval = setInterval(() => {
+            if (width >= 100) {
+                width = 0;
+            }
+            width += Math.random() * 2;
+            progressBar.style.width = `${Math.min(width, 80)}%`;
+        }, 300);
+    </script>
+</body>
+</html>

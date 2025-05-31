@@ -58,12 +58,15 @@ def load_user(user_id):
     return User(user_data) if user_data else None
 
 @app.route('/')
-def customer_form():
-    return render_template('customer_form.html')
+def splash():
+    # Render loading.html immediately
+    return render_template('loading.html')
+# (JS inside loading.html will redirect to /customer_form after a short delay)
 
-@app.route('/submit', methods=['POST'])
-def submit_enquiry():
-    try:
+# 2) Move your old “customer_form” route to /customer_form
+@app.route('/customer_form', methods=['GET', 'POST'])
+def customer_form():
+    if request.method == 'POST':
         enquiry = {
             'contact_info': {
                 'company': request.form.get('company'),
@@ -99,21 +102,19 @@ def submit_enquiry():
                 'notes': 'Initial enquiry submitted'
             }]
         }
-        
         db.enquiries.insert_one(enquiry)
-        
-        # Emit real-time update to clients
+
+        # Emit real-time update
         socketio.emit('analytics_update', {
             'stats': {
                 'total_enquiries': db.enquiries.count_documents({}),
-                # Include other stats as needed
+                # …
             }
-            # Include other data as needed
         })
-        
         return redirect(url_for('thank_you'))
-    except Exception as e:
-        return render_template('error.html', error=str(e))
+
+    # If GET, just render the form
+    return render_template('customer_form.html')
 
 @app.route('/thank_you')
 def thank_you():
