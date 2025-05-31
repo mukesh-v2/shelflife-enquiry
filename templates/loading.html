@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Envirocare Labs - Loading</title>
+    <title>Loading</title>
     <style>
         :root {
             --primary-color: #2b57a5;
             --secondary-color: #f8f9fa;
             --accent-color: #60ae56;
-            --text-color: #333;
         }
         
         * {
@@ -21,7 +20,7 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--secondary-color);
-            color: var(--text-color);
+            color: #333;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -63,26 +62,13 @@
         }
         
         .logo {
-            max-width: 120px;
+            max-width: 200px; /* Increased logo size */
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
             transition: transform 0.3s ease;
         }
         
         .logo:hover {
             transform: scale(1.05);
-        }
-        
-        h1 {
-            color: var(--primary-color);
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-        
-        .loading-text {
-            color: var(--text-color);
-            font-size: 1rem;
-            margin-bottom: 1.5rem;
         }
         
         .spinner {
@@ -124,10 +110,11 @@
             100% { opacity: 0.8; }
         }
         
-        .subtext {
-            font-size: 0.9rem;
-            color: #6c757d;
-            opacity: 0.8;
+        .loading-text {
+            color: #333;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
         }
         
         .background {
@@ -153,14 +140,12 @@
         <div class="logo-container">
             <img 
                 src="{{ url_for('static', filename='envirocare_logo.png') }}" 
-                alt="Envirocare Labs" 
+                alt="Envirocare Logo" 
                 class="logo"
                 onerror="this.style.display='none'"
             />
         </div>
-        
-        <h1>Envirocare Labs</h1>
-        <p class="loading-text">Loading your shelf-life study portal...</p>
+        <p class="loading-text">Loading...</p>
         <p class="subtext">Please wait a moment while we prepare everything</p>
     </div>
 
