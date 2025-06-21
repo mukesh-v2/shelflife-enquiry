@@ -88,7 +88,7 @@ def customer_form():
                 'process': request.form.get('process')
             },
             'study_details': {
-                'testing_condition': request.form.get('testing_condition'),
+                'testing_condition': request.form.getlist('testing_condition'),
                 'reason': request.form.get('reason'),
                 'analysis_type': request.form.getlist('analysis_type'),
                 'label_claims': request.form.get('label_claims')
