@@ -113,33 +113,32 @@
         <div class="container">
             <h2 class="mb-4">Enquiry Analytics</h2>
             
-           <div class="filter-bar">
-    <div class="row">
-        <div class="col-md-4">
-            <select class="form-control" id="timeFilter">
-                <option value="7">Last 7 Days</option>
-                <option value="30" selected>Last 30 Days</option>
-                <option value="90">Last 90 Days</option>
-                <option value="365">Last Year</option>
-                <option value="all">All Time</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <select class="form-control" id="categoryFilter">
-                <option value="all">All Categories</option>
-                {% for category in categories %}
-                <option value="{{ category }}">{{ category }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-4">
-            <button class="btn btn-brand btn-block" id="applyFilters">
-                Apply Filters
-            </button>
-        </div>
-    </div>
-</div>
-
+            <div class="filter-bar">
+                <div class="row">
+                    <div class="col-md-4">
+                        <select class="form-control" id="timeFilter" style="font-size: 14px; padding: 10px;">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="365">Last Year</option>
+                            <option value="all">All Time</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-control" id="categoryFilter" style="font-size: 14px; padding: 10px;">
+                            <option value="all">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-brand btn-block" id="applyFilters" style="font-size: 14px; padding: 10px;">
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
             
             <div class="summary-stats">
                 <div class="stat-card">
