@@ -59,6 +59,12 @@ a:hover {
     border-left: 4px solid #2b57a5; /* Brand blue */
 }
 
+.stage-history-container {
+    position: sticky;
+    top: 20px;
+    height: 600px; /* Fixed height for scrolling */
+}
+
 .alert-error {
     color: #721c24;
     background-color: #f8d7da;
@@ -369,4 +375,31 @@ a:hover {
 /* Add spacing to badge */
 .badge {
     padding: 0.5em 0.75em;
+}
+
+.custom-select {
+    padding: 10px 20px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: white;
+    width: 100%;
+    font-size: 0.9rem; /* Slightly reduced font size to prevent cutoffs */
+    color: #495057;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23343a40' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px 16px;
+    overflow: visible !important; /* Ensure the dropdown content can overflow the container */
+    min-height: 41px; /* Add minimum height to prevent text cutoff */
+}
+
+.custom-select:focus {
+    border-color: #60ae56;
+    box-shadow: 0 0 0 0.2rem rgba(96, 174, 86, 0.25);
+    outline: none;
+}
+
+.custom-select option {
+    color: #495057;
 }
