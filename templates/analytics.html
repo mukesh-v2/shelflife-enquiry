@@ -76,13 +76,23 @@
             color: #e74c3c;
         }
         
-        .filter-bar {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+       .filter-bar .form-control,
+    .filter-bar .btn {
+        font-size: 14px;
+        padding: 8px 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .filter-bar .col-md-4 {
+        margin-bottom: 10px; /* Ensures stacking space on smaller screens */
+    }
+
+    @media (min-width: 768px) {
+        .filter-bar .col-md-4 {
+            margin-bottom: 0; /* Reset for medium and up */
         }
+    }
     </style>
 </head>
 <body>
@@ -103,32 +113,33 @@
         <div class="container">
             <h2 class="mb-4">Enquiry Analytics</h2>
             
-            <div class="filter-bar">
-                <div class="row">
-                    <div class="col-md-3">
-                        <select class="form-control" id="timeFilter">
-                            <option value="7">Last 7 Days</option>
-                            <option value="30" selected>Last 30 Days</option>
-                            <option value="90">Last 90 Days</option>
-                            <option value="365">Last Year</option>
-                            <option value="all">All Time</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-control" id="categoryFilter">
-                            <option value="all">All Categories</option>
-                            {% for category in categories %}
-                            <option value="{{ category }}">{{ category }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-brand btn-block" id="applyFilters">
-                            Apply Filters
-                        </button>
-                    </div>
-                </div>
-            </div>
+           <div class="filter-bar">
+    <div class="row">
+        <div class="col-md-4">
+            <select class="form-control" id="timeFilter">
+                <option value="7">Last 7 Days</option>
+                <option value="30" selected>Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="365">Last Year</option>
+                <option value="all">All Time</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select class="form-control" id="categoryFilter">
+                <option value="all">All Categories</option>
+                {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-brand btn-block" id="applyFilters">
+                Apply Filters
+            </button>
+        </div>
+    </div>
+</div>
+
             
             <div class="summary-stats">
                 <div class="stat-card">

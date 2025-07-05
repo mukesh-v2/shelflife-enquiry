@@ -77,6 +77,52 @@
             font-size: 1.1rem;
             font-weight: 600;
         }
+        
+        .product-section {
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .remove-product {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .add-product {
+            margin-top: 20px;
+        }
+        
+        .custom-select {
+            padding: 10px 20px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            background-color: white;
+            width: 100%;
+            font-size: 0.9rem;
+            color: #495057;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23343a40' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px 16px;
+            overflow: visible !important;
+            min-height: 41px;
+        }
+        
+        .custom-select:focus {
+            border-color: #60ae56;
+            box-shadow: 0 0 0 0.2rem rgba(96, 174, 86, 0.25);
+            outline: none;
+        }
+        
+        .custom-select option {
+            color: #495057;
+            font-size: 0.9rem;
+            padding: 5px 15px;
+        }
     </style>
 </head>
 <body>
@@ -92,7 +138,7 @@
             
             <!-- Form card -->
             <div class="card form-card">
-                <form action="/submit" method="POST">
+                <form action="/customer_form" method="POST" id="enquiryForm">
                     <!-- Contact Information -->
                     <div class="card section-card">
                         <div class="card-header">Contact Information</div>
@@ -134,140 +180,161 @@
                         </div>
                     </div>
 
-                    <!-- Product Information -->
+                    <!-- Product Information (Dynamic) -->
                     <div class="card section-card">
                         <div class="card-header">Product Information</div>
                         <div class="card-body">
-                            <div class="form-group">
-                                <label class="required-label">Product Name</label>
-                                <input type="text" name="product_name" class="form-control" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="required-label">List of Ingredients</label>
-                                <textarea name="ingredients" class="form-control" rows="3" required></textarea>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
+                            <div id="productContainers">
+                                <!-- First product section -->
+                                <div class="product-section" id="product1">
+                                    <div class="float-right">
+                                        <span class="remove-product" onclick="removeProduct(1)">Remove Product</span>
+                                    </div>
                                     <div class="form-group">
-                                        <label class="required-label">Product Category</label>
-                                        <input type="text" name="category" class="form-control" required>
+                                        <label class="required-label">Product Name</label>
+                                        <input type="text" name="product_name[]" class="form-control" required>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="required-label">List of Ingredients</label>
+                                        <small style="color: gray; display: block; margin-top: 1px; margin-bottom: 1px;">
+                                            Major Ingredients (more than 5%)
+                                        </small>
+                                          <small style="color: gray; display: block; margin-top: 1px; margin-bottom: 1px;">
+                                            All submitted information will be kept strictly confidential and used only for study purposes
+                                        </small>  
+                                        <textarea name="ingredients[]" class="form-control" rows="3" required></textarea>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="required-label">Product Category *</label>
+                                                <select name="category[]" class="form-control custom-select" required>
+                                                    <option value="" selected disabled>-- Select Category --</option>
+                                                    <option value="Dairy Products & Analogues">Dairy Products & Analogues</option>
+                                                    <option value="Fats, Oils and Fat Emulsions">Fats, Oils and Fat Emulsions</option>
+                                                    <option value="Fruit and Vegetable Products">Fruit and Vegetable Products</option>
+                                                    <option value="Cereal and Cereal Products">Cereal and Cereal Products</option>
+                                                    <option value="Sweets and Confectionary">Sweets and Confectionary</option>
+                                                    <option value="Sweetening agents including Honey">Sweetening agents including Honey</option>
+                                                    <option value="Salt, Spices condiments and Related Products">Salt, Spices condiments and Related Products</option>
+                                                    <option value="Beverages (Other than Dairy & Fruits and Vegetable Based)">Beverages (Other than Dairy & Fruits and Vegetable Based)</option>
+                                                    <option value="Other Food Products and Ingredients">Other Food Products and Ingredients</option>
+                                                    <option value="Proprietary Food">Proprietary Food</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="required-label">Packaging Material</label>
+                                                <input type="text" name="packaging[]" class="form-control" required>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="required-label">Sample Quantity (Weight)</label>
+                                                <input type="text" name="quantity[]" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label class="required-label">Packaging Dimensions</label>
+                                                <input type="text" name="dimensions[]" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Expected Shelf Life</label>
+                                                <input type="text" name="expected_shelf_life[]" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="required-label">Storage Conditions *</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input storage-condition" type="radio" name="storage_condition_1" value="ambient" id="ambient1" checked>
+                                            <label class="form-check-label" for="ambient1">Ambient</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input storage-condition" type="radio" name="storage_condition_1" value="refrigerated" id="refrigerated1">
+                                            <label class="form-check-label" for="refrigerated1">Refrigerated</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input storage-condition" type="radio" name="storage_condition_1" value="frozen" id="frozen1">
+                                            <label class="form-check-label" for="frozen1">Frozen</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="required-label">Specific Temperature/Humidity Requirements</label>
+                                        <select name="temp_humidity[]" class="form-control custom-select" required>
+                                            <option value="" selected disabled>-- Select Requirement --</option>
+                                            <option value="ambient-real-time">Real Time: 25℃ 60%RH</option>
+                                            <option value="ambient-accelerated">Accelerated: 40℃ 75%RH</option>
+                                            
+                                            <option value="refrigerated-real-time" style="display: none;">Real Time: 1 to 4℃</option>
+                                            
+                                            <option value="frozen-real-time" style="display: none;">Real Time: -18℃</option>
+                                            <option value="other" style="display: none;">Other</option>
+                                        </select>
+                                        <input type="text" name="custom_temp_humidity[]" class="form-control" style="display: none;">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Number of Pull Outs</label>
+                                        <input type="text" name="pullout[]" class="form-control">
+                                    </div>
+
+                                    <!-- Study Details for this product -->
+                                    <div class="form-group">
+                                        <label class="required-label">Reason for Shelf Life Testing</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reason_1" value="New Product" id="new_product_1" required>
+                                            <label class="form-check-label" for="new_product_1">New Product</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reason_1" value="Change in Formula" id="formula_change_1">
+                                            <label class="form-check-label" for="formula_change_1">Change in Formula/Ingredients/Processing/Packaging</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reason_1" value="Verification" id="verification_1">
+                                            <label class="form-check-label" for="verification_1">Verification of Current Shelf Life</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reason_1" value="FSSA" id="fssa_1">
+                                            <label class="form-check-label" for="fssa_1">FSSA (Non-compliance Case)</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="required-label">Analysis Type</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="analysis_type_1" value="Microbiological" id="micro_1">
+                                            <label class="form-check-label" for="micro_1">Microbiological</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="analysis_type_1" value="Chemical" id="chemical_1">
+                                            <label class="form-check-label" for="chemical_1">Chemical</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="analysis_type_1" value="Sensory" id="sensory_1">
+                                            <label class="form-check-label" for="sensory_1">Sensory</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Label Claims (if any)</label>
+                                        <textarea name="label_claims_1" class="form-control" rows="3"></textarea>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label class="required-label">Packaging Material</label>
-                                        <input type="text" name="packaging" class="form-control" required>
-                                    </div>
-                                </div>
                             </div>
-
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="required-label">Sample Quantity (Weight)</label>
-                                        <input type="text" name="quantity" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label class="required-label">Packaging Dimensions</label>
-                                        <input type="text" name="dimensions" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label>Expected Shelf Life</label>
-                                        <input type="text" name="expected_shelf_life" class="form-control">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="required-label">Storage Conditions</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="storage_condition" value="Ambient" id="ambient">
-                                    <label class="form-check-label" for="ambient">Ambient</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="storage_condition" value="Refrigerated" id="refrigerated">
-                                    <label class="form-check-label" for="refrigerated">Refrigerated</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="storage_condition" value="Frozen" id="frozen">
-                                    <label class="form-check-label" for="frozen">Frozen</label>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Specific Temperature/Humidity Requirements</label>
-                                <input type="text" name="temp_humidity" class="form-control">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Manufacturing Process</label>
-                                <input type="text" name="process" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Study Details -->
-                    <div class="card section-card">
-                        <div class="card-header">Study Details</div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label class="required-label">Testing Condition</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="testing_condition" value="Real time" id="real_time" required>
-                                    <label class="form-check-label" for="real_time">Real time</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="testing_condition" value="Accelerated" id="accelerated">
-                                    <label class="form-check-label" for="accelerated">Accelerated</label>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="required-label">Reason for Shelf Life Testing</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="reason" value="New Product" id="new_product" required>
-                                    <label class="form-check-label" for="new_product">New Product</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="reason" value="Change in Formula" id="formula_change">
-                                    <label class="form-check-label" for="formula_change">Change in Formula/Ingredients/Processing/Packaging</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="reason" value="Verification" id="verification">
-                                    <label class="form-check-label" for="verification">Verification of Current Shelf Life</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="reason" value="FSSA" id="fssa">
-                                    <label class="form-check-label" for="fssa">FSSA (Non-compliance Case)</label>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="required-label">Analysis Type</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="analysis_type" value="Microbiological" id="micro">
-                                    <label class="form-check-label" for="micro">Microbiological</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="analysis_type" value="Chemical" id="chemical">
-                                    <label class="form-check-label" for="chemical">Chemical</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="analysis_type" value="Sensory" id="sensory">
-                                    <label class="form-check-label" for="sensory">Sensory</label>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Label Claims (if any)</label>
-                                <textarea name="label_claims" class="form-control" rows="3"></textarea>
-                            </div>
+                            
+                            <button type="button" class="btn btn-primary add-product" onclick="addProduct()">Add Another Product</button>
                         </div>
                     </div>
 
@@ -278,5 +345,336 @@
             </div>
         </div>
     </div>
+
+    <script>
+        let productCount = 1;
+        
+        function addProduct() {
+            productCount++;
+            const productContainers = document.getElementById('productContainers');
+            const newProductSection = document.createElement('div');
+            newProductSection.className = 'product-section';
+            newProductSection.id = `product${productCount}`;
+            
+            newProductSection.innerHTML = `
+                <div class="float-right">
+                    <span class="remove-product" onclick="removeProduct(${productCount})">Remove Product</span>
+                </div>
+                <div class="form-group">
+                    <label class="required-label">Product Name</label>
+                    <input type="text" name="product_name[]" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="required-label">List of Ingredients</label>
+                     <small style="color: gray; display: block; margin-top: 1px; margin-bottom: 1px;">
+                                            Major Ingredients (more than 5%)
+                                        </small>
+                                          <small style="color: gray; display: block; margin-top: 1px; margin-bottom: 1px;">
+                                            All submitted information will be kept strictly confidential and used only for study purposes
+                                        </small>  
+                    <textarea name="ingredients[]" class="form-control" rows="3" required></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-label">Product Category *</label>
+                            <select name="category[]" class="form-control custom-select" required>
+                                <option value="" selected disabled>-- Select Category --</option>
+                                <option value="Dairy Products & Analogues">Dairy Products & Analogues</option>
+                                <option value="Fats, Oils and Fat Emulsions">Fats, Oils and Fat Emulsions</option>
+                                <option value="Fruit and Vegetable Products">Fruit and Vegetable Products</option>
+                                <option value="Cereal and Cereal Products">Cereal and Cereal Products</option>
+                                <option value="Sweets and Confectionary">Sweets and Confectionary</option>
+                                <option value="Sweetening agents including Honey">Sweetening agents including Honey</option>
+                                <option value="Salt, Spices condiments and Related Products">Salt, Spices condiments and Related Products</option>
+                                <option value="Beverages (Other than Dairy & Fruits and Vegetable Based)">Beverages (Other than Dairy & Fruits and Vegetable Based)</option>
+                                <option value="Other Food Products and Ingredients">Other Food Products and Ingredients</option>
+                                <option value="Proprietary Food">Proprietary Food</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="required-label">Packaging Material</label>
+                            <input type="text" name="packaging[]" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-label">Sample Quantity (Weight)</label>
+                            <input type="text" name="quantity[]" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="required-label">Packaging Dimensions</label>
+                            <input type="text" name="dimensions[]" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Expected Shelf Life</label>
+                            <input type="text" name="expected_shelf_life[]" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required-label">Storage Conditions *</label>
+                    <div class="form-check">
+                        <input class="form-check-input storage-condition" type="radio" name="storage_condition_${productCount}" value="ambient" id="ambient${productCount}" checked>
+                        <label class="form-check-label" for="ambient${productCount}">Ambient</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input storage-condition" type="radio" name="storage_condition_${productCount}" value="refrigerated" id="refrigerated${productCount}">
+                        <label class="form-check-label" for="refrigerated${productCount}">Refrigerated</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input storage-condition" type="radio" name="storage_condition_${productCount}" value="frozen" id="frozen${productCount}">
+                        <label class="form-check-label" for="frozen${productCount}">Frozen</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required-label">Specific Temperature/Humidity Requirements</label>
+                    <select name="temp_humidity[]" class="form-control custom-select" required>
+                        <option value="" selected disabled>-- Select Requirement --</option>
+                        <option value="ambient-real-time">Real Time: 25℃ 60%RH</option>
+                        <option value="ambient-accelerated">Accelerated: 40℃ 75%RH</option>
+                        
+                        <option value="refrigerated-real-time" style="display: none;">Real Time: 1 to 4℃</option>
+                        
+                        <option value="frozen-real-time" style="display: none;">Real Time: -18℃</option>
+                        <option value="other" style="display: none;">Other</option>
+                    </select>
+                    <input type="text" name="custom_temp_humidity[]" class="form-control" style="display: none;">
+                </div>
+
+                <div class="form-group">
+                    <label>Number of Pull Outs</label>
+                    <input type="text" name="pullout[]" class="form-control">
+                </div>
+
+                <!-- Study Details for this product -->
+                <div class="form-group">
+                    <label class="required-label">Reason for Shelf Life Testing</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="reason_${productCount}" value="New Product" id="new_product_${productCount}" required>
+                        <label class="form-check-label" for="new_product_${productCount}">New Product</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="reason_${productCount}" value="Change in Formula" id="formula_change_${productCount}">
+                        <label class="form-check-label" for="formula_change_${productCount}">Change in Formula/Ingredients/Processing/Packaging</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="reason_${productCount}" value="Verification" id="verification_${productCount}">
+                        <label class="form-check-label" for="verification_${productCount}">Verification of Current Shelf Life</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="reason_${productCount}" value="FSSA" id="fssa_${productCount}">
+                        <label class="form-check-label" for="fssa_${productCount}">FSSA (Non-compliance Case)</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required-label">Analysis Type</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="analysis_type_${productCount}" value="Microbiological" id="micro_${productCount}">
+                        <label class="form-check-label" for="micro_${productCount}">Microbiological</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="analysis_type_${productCount}" value="Chemical" id="chemical_${productCount}">
+                        <label class="form-check-label" for="chemical_${productCount}">Chemical</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="analysis_type_${productCount}" value="Sensory" id="sensory_${productCount}">
+                        <label class="form-check-label" for="sensory_${productCount}">Sensory</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Label Claims (if any)</label>
+                    <textarea name="label_claims_${productCount}" class="form-control" rows="3"></textarea>
+                </div>
+            `;
+            
+            productContainers.appendChild(newProductSection);
+            const selectedStorage = newProductSection.querySelector(`input[name="storage_condition_${productCount}"]:checked`);
+            if (selectedStorage) {
+                updateTempHumidityOptions(newProductSection, selectedStorage.value);
+            }
+
+            // ✅ Attach change listener to the new storage condition radios
+            newProductSection.querySelectorAll(`input[name="storage_condition_${productCount}"]`).forEach(radio => {
+                radio.addEventListener("change", function () {
+                    updateTempHumidityOptions(newProductSection, this.value);
+                });
+            });
+            
+            // Initialize the new product's temp/humidity dropdown
+        }
+        
+        function removeProduct(productId) {
+            const productElement = document.getElementById(`product${productId}`);
+            productElement.remove();
+            
+            // Update IDs of remaining products
+            const products = document.querySelectorAll('.product-section');
+            products.forEach((product, index) => {
+                product.id = `product${index + 1}`;
+                const removeSpan = product.querySelector('.remove-product');
+                removeSpan.onclick = function() { removeProduct(index + 1); };
+                
+                // Update storage condition radio button names
+                const storageRadios = product.querySelectorAll('.storage-condition');
+                storageRadios.forEach(radio => {
+                    radio.name = `storage_condition_${index + 1}`;
+                });
+                
+                // Update study details field names
+                const studyFields = product.querySelectorAll('[name^="reason_"], [name^="analysis_type_"], [name^="label_claims_"]');
+                studyFields.forEach(field => {
+                    const oldName = field.name;
+                    const newSuffix = index + 1;
+                    const newId = field.id.replace(/\d+$/, newSuffix);
+                    
+                    field.name = oldName.replace(/\d+$/, newSuffix);
+                    field.id = newId;
+                });
+            });
+        }
+        
+        // Temperature/humidity requirements functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const productSections = document.querySelectorAll('.product-section');
+            productSections.forEach((section, index) => {
+                const storageRadios = section.querySelectorAll('.storage-condition');
+                storageRadios.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        updateTempHumidityOptions(section, this.value);
+                    });
+                });
+                const firstRadio = section.querySelector('.storage-condition:checked') || section.querySelector('.storage-condition');
+                if (firstRadio) {
+                    updateTempHumidityOptions(section, firstRadio.value);
+                }
+            });
+        });
+        function updateTempHumidityOptions(section, storageCondition) {
+        const tempHumiditySelect = section.querySelector('select[name="temp_humidity[]"]');
+        const customTempInput = section.querySelector('input[name="custom_temp_humidity[]"]');
+
+        const previousValue = tempHumiditySelect.value;
+
+        // Hide all options except the placeholder
+        tempHumiditySelect.querySelectorAll('option').forEach(option => {
+            if (option.value !== '') {
+                option.style.display = 'none';
+            }
+        });
+
+        const showOptions = [];
+        if (storageCondition === 'ambient') {
+            showOptions.push('ambient-real-time', 'ambient-accelerated', 'other');
+        } else if (storageCondition === 'refrigerated') {
+            showOptions.push('refrigerated-real-time', 'other');
+        } else if (storageCondition === 'frozen') {
+            showOptions.push('frozen-real-time', 'other');
+        }
+
+        showOptions.forEach(value => {
+            const option = tempHumiditySelect.querySelector(`option[value="${value}"]`);
+            if (option) option.style.display = 'block';
+        });
+
+        if (!showOptions.includes(previousValue)) {
+            tempHumiditySelect.value = '';
+            customTempInput.style.display = 'none';
+        } else {
+            tempHumiditySelect.value = previousValue;
+            customTempInput.style.display = (previousValue === 'other') ? 'block' : 'none';
+        }
+
+        if (!tempHumiditySelect.dataset.listenerAttached) {
+            tempHumiditySelect.addEventListener('change', function () {
+                if (this.value === 'other') {
+                    customTempInput.style.display = 'block';
+                } else {
+                    customTempInput.style.display = 'none';
+                }
+            });
+            tempHumiditySelect.dataset.listenerAttached = "true";
+        }
+    }
+
+    document.getElementById("enquiryForm").addEventListener("submit", function (e) {
+        e.preventDefault(); // Prevent actual form submission
+
+        const products = [];
+        const form = document.getElementById("enquiryForm");
+        const contactInfo = {
+            company: form.querySelector('input[name="company"]').value,
+            contact_person: form.querySelector('input[name="contact_person"]').value,
+            designation: form.querySelector('input[name="designation"]').value,
+            phone: form.querySelector('input[name="phone"]').value,
+            email: form.querySelector('input[name="email"]').value
+        };
+
+        document.querySelectorAll(".product-section").forEach((section, index) => {
+            const tempHumiditySelect = section.querySelector('select[name="temp_humidity[]"]');
+            const selectedOption = tempHumiditySelect.options[tempHumiditySelect.selectedIndex];
+
+            const product = {
+                product_name: section.querySelector('input[name="product_name[]"]').value,
+                ingredients: section.querySelector('textarea[name="ingredients[]"]').value,
+                category: section.querySelector('select[name="category[]"]').value,
+                packaging: section.querySelector('input[name="packaging[]"]').value,
+                quantity: section.querySelector('input[name="quantity[]"]').value,
+                dimensions: section.querySelector('input[name="dimensions[]"]').value,
+                expected_shelf_life: section.querySelector('input[name="expected_shelf_life[]"]').value,
+                storage_condition: section.querySelector(`input[name="storage_condition_${index + 1}"]:checked`)?.value,
+                temp_humidity: tempHumiditySelect.value,
+                temp_humidity_label: selectedOption ? selectedOption.textContent : "",
+                custom_temp_humidity: section.querySelector('input[name="custom_temp_humidity[]"]').value,
+                pullout: section.querySelector('input[name="pullout[]"]').value,
+                reason: section.querySelector(`input[name="reason_${index + 1}"]:checked`)?.value,
+                analysis_type: Array.from(section.querySelectorAll(`input[name="analysis_type_${index + 1}"]:checked`)).map(el => el.value),
+                label_claims: section.querySelector(`textarea[name="label_claims_${index + 1}"]`)?.value || ""
+            };
+
+            products.push(product);
+        });
+        console.log(products)
+
+        fetch('/customer_form', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ contact_info: contactInfo, products: products })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
+        .then(data => {
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert("Form submitted successfully.");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("There was an error submitting the form.");
+        });
+    });
+
+    </script>
 </body>
 </html>
