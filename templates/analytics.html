@@ -12,14 +12,14 @@
             background-color: #f8f9fa;
             min-height: 100vh;
         }
-        
+
         .card {
             margin-bottom: 25px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             border: none;
             border-radius: 10px;
         }
-        
+
         .card-header {
             background-color: #2b57a5;
             color: white;
@@ -27,20 +27,22 @@
             padding: 15px 20px;
             border-radius: 10px 10px 0 0 !important;
         }
-        
+
         .chart-container {
-            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             height: 300px;
             padding: 15px;
         }
-        
+
         .summary-stats {
             display: flex;
             justify-content: space-around;
             margin-bottom: 30px;
             flex-wrap: wrap;
         }
-        
+
         .stat-card {
             background: white;
             border-radius: 10px;
@@ -50,38 +52,48 @@
             min-width: 200px;
             margin: 10px;
         }
-        
+
         .stat-value {
             font-size: 2.5rem;
             font-weight: 700;
             color: #2b57a5;
             margin: 10px 0;
         }
-        
+
         .stat-label {
             color: #6c757d;
             font-size: 1.1rem;
         }
-        
+
         .stat-trend {
             margin-top: 10px;
             font-size: 0.9rem;
         }
-        
+
         .trend-up {
             color: #60ae56;
         }
-        
+
         .trend-down {
             color: #e74c3c;
         }
-        
-        .filter-bar {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+
+        .filter-bar .form-control,
+        .filter-bar .btn {
+            font-size: 14px;
+            padding: 8px 12px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .filter-bar .col-md-4 {
+            margin-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .filter-bar .col-md-4 {
+                margin-bottom: 0;
+            }
         }
     </style>
 </head>
@@ -102,11 +114,11 @@
     <div class="analytics-container">
         <div class="container">
             <h2 class="mb-4">Enquiry Analytics</h2>
-            
+
             <div class="filter-bar">
                 <div class="row">
                     <div class="col-md-4">
-                        <select class="form-control" id="timeFilter" style="font-size: 14px; padding: 10px;">
+                        <select class="form-control" id="timeFilter">
                             <option value="7">Last 7 Days</option>
                             <option value="30" selected>Last 30 Days</option>
                             <option value="90">Last 90 Days</option>
@@ -115,7 +127,7 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <select class="form-control" id="categoryFilter" style="font-size: 14px; padding: 10px;">
+                        <select class="form-control" id="categoryFilter">
                             <option value="all">All Categories</option>
                             {% for category in categories %}
                             <option value="{{ category }}">{{ category }}</option>
@@ -123,45 +135,40 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <button class="btn btn-brand btn-block" id="applyFilters" style="font-size: 14px; padding: 10px;">
+                        <button class="btn btn-brand btn-block" id="applyFilters">
                             Apply Filters
                         </button>
                     </div>
                 </div>
             </div>
-            
+
             <div class="summary-stats">
                 <div class="stat-card">
                     <div class="stat-label">Total Enquiries</div>
                     <div class="stat-value" id="totalEnquiries">0</div>
                     <div class="stat-trend trend-up" id="enquiryTrend">Loading...</div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-label">Conversion Rate</div>
                     <div class="stat-value" id="conversionRate">0%</div>
                     <div class="stat-trend trend-up" id="conversionTrend">Loading...</div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-label">Avg. Response Time</div>
                     <div class="stat-value" id="avgResponse">0h</div>
                     <div class="stat-trend trend-down" id="responseTrend">Loading...</div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-label">Active Enquiries</div>
                     <div class="stat-value" id="activeEnquiries">0</div>
                     <div class="stat-trend trend-up" id="activeTrend">Loading...</div>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="card">
-                        <div class="card-header">
-                            Enquiry Stage Distribution
-                        </div>
+                        <div class="card-header">Enquiry Stage Distribution</div>
                         <div class="card-body">
                             <div class="chart-container">
                                 <canvas id="stageChart"></canvas>
@@ -169,12 +176,10 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="card">
-                        <div class="card-header">
-                            Category Distribution
-                        </div>
+                        <div class="card-header">Category Distribution</div>
                         <div class="card-body">
                             <div class="chart-container">
                                 <canvas id="categoryChart"></canvas>
@@ -183,13 +188,11 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-8">
                     <div class="card">
-                        <div class="card-header">
-                            Enquiries Over Time
-                        </div>
+                        <div class="card-header">Enquiries Over Time</div>
                         <div class="card-body">
                             <div class="chart-container">
                                 <canvas id="timelineChart"></canvas>
@@ -197,12 +200,10 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="card">
-                        <div class="card-header">
-                            Top Products
-                        </div>
+                        <div class="card-header">Top Products</div>
                         <div class="card-body">
                             <div class="chart-container">
                                 <canvas id="productsChart"></canvas>
@@ -214,92 +215,84 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
-    // Establish WebSocket connection
     const socket = io();
 
-    // Initialize Charts
-    document.addEventListener('DOMContentLoaded', function() {
-        // Function to load data via AJAX
+    document.addEventListener('DOMContentLoaded', function () {
         function loadAnalyticsData() {
             const timeFilter = document.getElementById('timeFilter').value;
             const categoryFilter = document.getElementById('categoryFilter').value;
-            
+
             fetch(`/analytics/data?days=${timeFilter}&category=${categoryFilter}`)
                 .then(response => response.json())
                 .then(data => {
                     updateSummaryStats(data.stats);
                     updateCharts(data);
                 })
-                .catch(error => {
-                    console.error('Error loading analytics data:', error);
-                });
+                .catch(error => console.error('Error loading analytics data:', error));
         }
-        
-        // Update summary statistics
+
         function updateSummaryStats(stats) {
             document.getElementById('totalEnquiries').textContent = stats.total_enquiries;
             document.getElementById('conversionRate').textContent = stats.conversion_rate + '%';
             document.getElementById('avgResponse').textContent = stats.avg_response + 'h';
             document.getElementById('activeEnquiries').textContent = stats.active_enquiries;
-            
+
             document.getElementById('enquiryTrend').textContent = stats.enquiry_trend;
             document.getElementById('conversionTrend').textContent = stats.conversion_trend;
             document.getElementById('responseTrend').textContent = stats.response_trend;
             document.getElementById('activeTrend').textContent = stats.active_trend;
-            
-            // Update trend colors
-            document.getElementById('enquiryTrend').className = 
+
+            document.getElementById('enquiryTrend').className =
                 'stat-trend ' + (stats.enquiry_trend.includes('+') ? 'trend-up' : 'trend-down');
-            document.getElementById('conversionTrend').className = 
+            document.getElementById('conversionTrend').className =
                 'stat-trend ' + (stats.conversion_trend.includes('+') ? 'trend-up' : 'trend-down');
-            document.getElementById('responseTrend').className = 
+            document.getElementById('responseTrend').className =
                 'stat-trend ' + (stats.response_trend.includes('-') ? 'trend-down' : 'trend-up');
-            document.getElementById('activeTrend').className = 
+            document.getElementById('activeTrend').className =
                 'stat-trend ' + (stats.active_trend.includes('+') ? 'trend-up' : 'trend-down');
         }
-        
-        // Initialize charts
-        const stageChart = new Chart(
-            document.getElementById('stageChart').getContext('2d'), 
-            { type: 'doughnut', data: { datasets: [{}] } }
-        );
-        
-        const categoryChart = new Chart(
-            document.getElementById('categoryChart').getContext('2d'), 
-            { type: 'bar', data: { datasets: [{}] } }
-        );
-        
-        const timelineChart = new Chart(
-            document.getElementById('timelineChart').getContext('2d'), 
-            { type: 'line', data: { datasets: [{}] } }
-        );
-        
-        const productsChart = new Chart(
-            document.getElementById('productsChart').getContext('2d'), 
-            { type: 'pie', data: { datasets: [{}] } }
-        );
-        
-        // Update charts with new data
+
+        const stageChart = new Chart(document.getElementById('stageChart').getContext('2d'), {
+            type: 'doughnut',
+            data: { datasets: [{}] }
+        });
+
+        const categoryChart = new Chart(document.getElementById('categoryChart').getContext('2d'), {
+            type: 'bar',
+            data: { datasets: [{}] }
+        });
+
+        const timelineChart = new Chart(document.getElementById('timelineChart').getContext('2d'), {
+            type: 'line',
+            data: { datasets: [{}] }
+        });
+
+        const productsChart = new Chart(document.getElementById('productsChart').getContext('2d'), {
+            type: 'pie',
+            data: { datasets: [{}] }
+        });
+
         function updateCharts(data) {
-            // Stage Distribution Chart
+            const MAX_LABEL_LENGTH = 15;
+
+            // Stage Chart
             stageChart.data = {
                 labels: data.stage_labels,
                 datasets: [{
                     data: data.stage_data,
-                    backgroundColor: [
-                        '#2b57a5', '#60ae56', '#f39c12', '#e74c3c', 
-                        '#9b59b6', '#1abc9c', '#3498db', '#f1c40f'
-                    ],
+                    backgroundColor: ['#2b57a5', '#60ae56', '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c', '#3498db', '#f1c40f'],
                     borderWidth: 1
                 }]
             };
             stageChart.update();
-            
-            // Category Distribution Chart
+
+            // Category Chart with truncated labels
             categoryChart.data = {
-                labels: data.category_labels,
+                labels: data.category_labels.map(label =>
+                    label.length > MAX_LABEL_LENGTH ? label.slice(0, MAX_LABEL_LENGTH - 3) + '...' : label
+                ),
                 datasets: [{
                     label: 'Number of Enquiries',
                     data: data.category_data,
@@ -308,9 +301,24 @@
                     borderWidth: 1
                 }]
             };
-            categoryChart.options.scales.y = { beginAtZero: true };
+            categoryChart.options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: (tooltipItems) => {
+                                const index = tooltipItems[0].dataIndex;
+                                return data.category_labels[index];
+                            }
+                        }
+                    }
+                }
+            };
             categoryChart.update();
-            
+
             // Timeline Chart
             timelineChart.data = {
                 labels: data.timeline_labels,
@@ -323,31 +331,25 @@
                     tension: 0.3
                 }]
             };
-            timelineChart.options.scales.y = { beginAtZero: true };
+            timelineChart.options = { scales: { y: { beginAtZero: true } } };
             timelineChart.update();
-            
-            // Top Products Chart
+
+            // Products Chart
             productsChart.data = {
                 labels: data.product_labels,
                 datasets: [{
                     data: data.product_data,
-                    backgroundColor: [
-                        '#2b57a5', '#3498db', '#1abc9c', '#60ae56', '#f39c12'
-                    ],
+                    backgroundColor: ['#2b57a5', '#3498db', '#1abc9c', '#60ae56', '#f39c12'],
                     borderWidth: 1
                 }]
             };
             productsChart.update();
         }
-        
-        // Initial load
+
         loadAnalyticsData();
-        
-        // Filter functionality
         document.getElementById('applyFilters').addEventListener('click', loadAnalyticsData);
-        
-        // Listen for real-time data updates via WebSocket
-        socket.on('analytics_update', function(data) {
+
+        socket.on('analytics_update', function (data) {
             updateSummaryStats(data.stats);
             updateCharts(data);
         });

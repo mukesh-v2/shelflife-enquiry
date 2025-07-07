@@ -1,13 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, session, url_for
 from flask import jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from pymongo import MongoClient
+from pymongo import DESCENDING, MongoClient
 from bson.objectid import ObjectId
-from datetime import datetime
 from collections import defaultdict
 from datetime import datetime, timedelta
 from flask_socketio import SocketIO
 from werkzeug.security import generate_password_hash, check_password_hash
+from zoneinfo import ZoneInfo
 import os
 import re
 
@@ -42,8 +42,11 @@ ALL_STAGES = [
     'Protocol Sent',
     'Quotation Sent',
     'Negotiation Stage',
+    'Unqualified',
     'Converted',
-    'Unqualified'
+    'Study Abandoned',
+    'Payment Recieved',
+    'Report Generated'
 ]
 
 class User(UserMixin):
@@ -64,57 +67,60 @@ def splash():
 # (JS inside loading.html will redirect to /customer_form after a short delay)
 
 # 2) Move your old “customer_form” route to /customer_form
+from flask import request, jsonify, render_template, url_for, redirect
+
+from flask import request, jsonify, redirect, url_for, render_template
+
 @app.route('/customer_form', methods=['GET', 'POST'])
 def customer_form():
     if request.method == 'POST':
-        enquiry = {
-            'contact_info': {
-                'company': request.form.get('company'),
-                'contact_person': request.form.get('contact_person'),
-                'designation': request.form.get('designation'),
-                'phone': request.form.get('phone'),
-                'email': request.form.get('email')
-            },
-            'product_info': {
-                'name': request.form.get('product_name'),
-                'ingredients': request.form.get('ingredients'),
-                'category': request.form.get('category'),
-                'packaging': request.form.get('packaging'),
-                'quantity': request.form.get('quantity'),
-                'dimensions': request.form.get('dimensions'),
-                'storage_condition': request.form.getlist('storage_condition'),
-                'temp_humidity': request.form.get('temp_humidity'),
-                'expected_shelf_life': request.form.get('expected_shelf_life'),
-                'process': request.form.get('process')
-            },
-            'study_details': {
-                'testing_condition': request.form.getlist('testing_condition'),
-                'reason': request.form.get('reason'),
-                'analysis_type': request.form.getlist('analysis_type'),
-                'label_claims': request.form.get('label_claims')
-            },
-            'current_stage': 'Enquiry Received',
-            'created_at': datetime.utcnow(),
-            'history': [{
+        try:
+            data = request.get_json()
+            print("💡 Received data:", data)  # Add this for debugging
+
+            # Contact info
+            contact_info = data.get('contact_info', {})
+            if not contact_info:
+                return jsonify({'status': 'error', 'message': 'Missing contact information'}), 400
+
+            # Products
+            products = data.get('products', [])
+            if not isinstance(products, list):
+                return jsonify({'status': 'error', 'message': 'Invalid format: products must be a list'}), 400
+
+            for product in products:
+                if not isinstance(product, dict):
+                    return jsonify({'status': 'error', 'message': 'Each product must be a dictionary'}), 400
+                product['created_at'] = datetime.now(ZoneInfo("Asia/Kolkata"))
+                product['status'] = 'Received'
+
+            guide_by=data.get('guide','')
+            # Insert
+            enquiry_doc = {
+                "contact_info": contact_info,
+                "products": products,
+                "created_at": datetime.now(ZoneInfo("Asia/Kolkata")),
+                'current_stage': 'Enquiry Received',
+                "guide_by":guide_by,
+                'history': [{
                 'stage': 'Enquiry Received',
-                'date': datetime.utcnow(),
+                'date': datetime.now(ZoneInfo("Asia/Kolkata")),
                 'changed_by': 'Customer',
                 'notes': 'Initial enquiry submitted'
             }]
-        }
-        db.enquiries.insert_one(enquiry)
-
-        # Emit real-time update
-        socketio.emit('analytics_update', {
-            'stats': {
-                'total_enquiries': db.enquiries.count_documents({}),
-                # …
             }
-        })
-        return redirect(url_for('thank_you'))
 
-    # If GET, just render the form
+            db.enquiries.insert_one(enquiry_doc)
+
+            return jsonify({'status': 'success', 'redirect_url': url_for('thank_you')})
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({'status': 'error', 'message': str(e)}), 500
+
     return render_template('customer_form.html')
+
 
 @app.route('/thank_you')
 def thank_you():
@@ -127,6 +133,7 @@ def login():
         if user_data and check_password_hash(user_data['password_hash'], request.form['password']):
             user = User(user_data)
             login_user(user)
+            session['username'] = request.form['username']
             return redirect(url_for('dashboard'))
         return render_template('login.html', error='Invalid credentials')
     return render_template('login.html')
@@ -137,43 +144,58 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
     query = {}
+
     # Get filter parameters from request arguments
-    company_search = request.args.get('company', '') # Keep the search input
-    company_filter = request.args.get('company_filter', '') # New dropdown filter
-    product_filter = request.args.get('product_filter', '') # New dropdown filter
+    company_search = request.args.get('company', '')
+    company_filter = request.args.get('company_filter', '')
+    product_filter = request.args.get('product_filter', '')
     stage_filter = request.args.get('stage', '')
+    username = session.get('username')
+    ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n"]
+    if username not in ADMIN_USERS:
+        query['guide_by'] = username 
     
-    # Build query based on filters
+
+    # Build MongoDB query
     if company_search:
-        # Use the search input for partial matching
         query['contact_info.company'] = {'$regex': company_search, '$options': 'i'}
     elif company_filter:
-        # Use the dropdown filter for exact matching
         query['contact_info.company'] = company_filter
-    
+
     if product_filter:
-        query['product_info.name'] = product_filter
-    
+        query['products.product_name'] = product_filter  # ✅ Corrected field
+
     if stage_filter:
         query['current_stage'] = stage_filter
-    
-    # Fetch all enquiries to get unique values for dropdowns
-    all_enquiries = list(db.enquiries.find({}))
-    unique_companies = sorted(list(set([e['contact_info']['company'] for e in all_enquiries if 'contact_info' in e and 'company' in e['contact_info']]))) if all_enquiries else []
-    unique_products = sorted(list(set([e['product_info']['name'] for e in all_enquiries if 'product_info' in e and 'name' in e['product_info']]))) if all_enquiries else []
 
     # Fetch filtered enquiries
-    enquiries = list(db.enquiries.find(query).sort('created_at', -1))
+    enquiries = list(db.enquiries.find(query).sort([('created_at', -1)]))
 
+    # Get unique companies for filter dropdown
+    all_enquiries = list(db.enquiries.find({}))
+    unique_companies = sorted(list(set(
+        [e['contact_info']['company'] for e in all_enquiries if 'contact_info' in e and 'company' in e['contact_info']]
+    ))) if all_enquiries else []
+
+    # Get unique product names across all products
+    unique_products = sorted(list(set(
+        [p['product_name'] for e in all_enquiries if 'products' in e for p in e['products'] if 'product_name' in p]
+    ))) if all_enquiries else []
+    
+  
+    # ✅ Render template with raw MongoDB objects
     return render_template('sales_dashboard.html',
-                         enquiries=enquiries,
-                         unique_companies=unique_companies,
-                         unique_products=unique_products,
-                         request=request) # Pass request object to access args in template
+                           enquiries=enquiries,
+                           unique_companies=unique_companies,
+                           unique_products=unique_products,
+                           request=request)
+
+
 
 @app.route('/enquiry/<id>')
 @login_required
@@ -197,7 +219,7 @@ def update_stage(id):
         {'$set': {'current_stage': new_stage},
          '$push': {'history': {
              'stage': new_stage,
-             'date': datetime.utcnow(),
+             'date': datetime.now(ZoneInfo("Asia/Kolkata")),
              'changed_by': current_user.username,
              'notes': notes
          }}}
@@ -208,160 +230,218 @@ def update_stage(id):
 @login_required
 def analytics():
     categories = db.enquiries.distinct("product_info.category")
+    
     return render_template('analytics.html', categories=categories)
 
+
 @app.route('/analytics/data')
-@login_required
-def analytics_data():
-    # Get filter parameters
-    days = request.args.get('days', '30')
-    category = request.args.get('category', 'all')
-    
-    # Calculate date range
-    end_date = datetime.utcnow()
-    if days == 'all':
-        start_date = datetime(2000, 1, 1)  # Very old date
-    else:
-        start_date = end_date - timedelta(days=int(days))
-    
-    # Build query based on filters
-    query = {"created_at": {"$gte": start_date}}
-    if category != 'all':
-        query["product_info.category"] = category
-    
-    # Get all enquiries
+def get_analytics_data():
+    days = request.args.get('days')
+    category = request.args.get('category')
+    username = session.get('username')
+    print("From data " + str(username))
+    ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n"]
+
+    # Apply filter for date
+    date_filter = {}
+    if days and days != "all":
+        date_filter["created_at"] = {
+            "$gte": datetime.utcnow() - timedelta(days=int(days))
+        }
+
+    query = {**date_filter}
+    if category and category != "all":
+        query["products.category"] = category
+
+    if username not in ADMIN_USERS:
+        query['guide_by'] = username
+
     enquiries = list(db.enquiries.find(query))
-    
-    # Calculate statistics
+
+    # Prepare response
     total_enquiries = len(enquiries)
-    converted_enquiries = [e for e in enquiries if e['current_stage'] == 'Converted']
-    converted = len(converted_enquiries)
-    conversion_rate = round((converted / total_enquiries * 100) if total_enquiries > 0 else 0, 1)
-    active_enquiries_count = sum(1 for e in enquiries if e['current_stage'] not in ['Converted', 'Unqualified'])
+    all_products = [p for e in enquiries for p in e.get("products", [])]
+    completed = [p for p in all_products if p.get("status") == "completed"]
+    category_counts = {}
+    stage_counts = {}
+    product_counts = {}
+    timeline = {}
 
-    # Calculate average response time for converted enquiries
-    total_response_time = timedelta(0)
-    converted_count = 0
-    for enquiry in converted_enquiries:
-        created_at = enquiry.get('created_at')
-        # Find the 'Converted' stage in history to get conversion date
-        converted_date = None
-        for history_item in enquiry.get('history', []):
-            if history_item.get('stage') == 'Converted':
-                converted_date = history_item.get('date')
-                break
+    for e in enquiries:
+        stage = e.get("current_stage", "Unknown")
+        stage_counts[stage] = stage_counts.get(stage, 0) + 1
+        date_key = e.get("created_at", datetime.now(ZoneInfo("Asia/Kolkata"))).strftime("%Y-%m-%d")
+        timeline[date_key] = timeline.get(date_key, 0) + 1
+
+        for p in e.get("products", []):
+            cat = p.get("category", "Uncategorized")
+            category_counts[cat] = category_counts.get(cat, 0) + 1
+            name = p.get("product_name", "Unnamed")
+            product_counts[name] = product_counts.get(name, 0) + 1
+
+    INACTIVE_STAGES = {"Converted", "Payment Recieved", "Unqualified", "Study Abandoned", "Report Generated"}
+
+    active_enquiries = 0
+    for e in enquiries:
+        history = e.get("history", [])
+        if history:
+            last_stage = history[-1].get("stage")
+            if last_stage not in INACTIVE_STAGES:
+                active_enquiries += 1
+        else:
+            active_enquiries += 1  # no history = assume active
+
+    CONVERTED_STAGE = ["Converted", "Payment Received"]
+    rate_num = 0
+    for e in enquiries:
+        history = e.get("history", [])
+        if history:
+            last_stage = history[-1].get("stage")
+            if last_stage in CONVERTED_STAGE:
+                rate_num += 1
+
+    response_times = []
+    for e in enquiries:
+        history = e.get("history", [])
+
+        if len(history) >= 2:
+            stage0_time = history[0].get("date")
+            stage1_time = history[1].get("date")
+
+            if stage0_time and stage1_time:
+                t1 = stage0_time if isinstance(stage0_time, datetime) else datetime.fromisoformat(stage0_time)
+                t2 = stage1_time if isinstance(stage1_time, datetime) else datetime.fromisoformat(stage1_time)
+                delta = (t2 - t1).total_seconds() / 3600  # convert seconds to hours
+                response_times.append(delta)
+
+    # Calculate average response time in hours
+    avg_response = round(sum(response_times) / len(response_times), 2) if response_times else 0
+
+    conversion_rate = round(rate_num / len(enquiries) * 100, 2) if enquiries else 0
+
+    prev_trend = db.trends.find_one(
+        {"username": username, "days": days, "category": category},
+        sort=[("date", DESCENDING)]
+    )
+
+    # --- Step 2: Calculate trends ---
+    def trend_percent(new, old):
+        if old == 0:
+            return "+0%"
+        change = ((new - old) / old) * 100 if old else 0
+        sign = "+" if change >= 0 else "-"
+        return f"{sign}{abs(round(change))}%"
+
+    if prev_trend:
+        if prev_trend.get("total_enquiries") == total_enquiries:
+            enquiry_trend = prev_trend.get("enquiry_trend", "+0%")
+        else:
+            enquiry_trend = trend_percent(total_enquiries, prev_trend.get("total_enquiries", 0))
         
-        if created_at and converted_date:
-            time_to_convert = converted_date - created_at
-            total_response_time += time_to_convert
-            converted_count += 1
+        if prev_trend.get("conversion_rate") == conversion_rate:
+            conversion_trend = prev_trend.get("conversion_trend", "+0%")
+        else:
+            conversion_trend = trend_percent(conversion_rate, prev_trend.get("conversion_rate", 0))
 
-    avg_response_seconds = (total_response_time.total_seconds() / converted_count) if converted_count > 0 else 0
-    # Convert seconds to a more readable format, e.g., hours or days
-    # For simplicity, let's represent it in hours for now
-    avg_response_hours = round(avg_response_seconds / 3600, 1)
+        if prev_trend.get("avg_response") == avg_response:
+            response_trend = prev_trend.get("response_trend", "+0%")
+        else:
+            response_trend = trend_percent(avg_response, prev_trend.get("avg_response", 0))
 
-    # Calculate trends
-    # Define previous period (e.g., same duration as current period, but shifted back)
-    if days == 'all':
-        # For 'all' data, trends are not meaningful without a defined period
-        prev_total_enquiries = total_enquiries
-        prev_converted = converted
-        prev_active_enquiries = active_enquiries_count
-        prev_avg_response_seconds = avg_response_seconds
+        if prev_trend.get("active_enquiries") == active_enquiries:
+            active_trend = prev_trend.get("active_trend", "+0%")
+        else:
+            active_trend = trend_percent(active_enquiries, prev_trend.get("active_enquiries", 0))
     else:
-        prev_end_date = start_date
-        prev_start_date = end_date - timedelta(days=int(days)*2)
-        prev_query = {"created_at": {"$gte": prev_start_date, "$lt": prev_end_date}}
-        if category != 'all':
-            prev_query["product_info.category"] = category
-        
-        prev_enquiries = list(db.enquiries.find(prev_query))
-        prev_total_enquiries = len(prev_enquiries)
-        prev_converted = sum(1 for e in prev_enquiries if e['current_stage'] == 'Converted')
-        prev_active_enquiries = sum(1 for e in prev_enquiries if e['current_stage'] not in ['Converted', 'Unqualified'])
+        enquiry_trend = conversion_trend = response_trend = active_trend = "+0%"
 
-        # Calculate previous average response time
-        prev_total_response_time = timedelta(0)
-        prev_converted_count = 0
-        for enquiry in prev_enquiries:
-            created_at = enquiry.get('created_at')
-            converted_date = None
-            for history_item in enquiry.get('history', []):
-                if history_item.get('stage') == 'Converted':
-                    converted_date = history_item.get('date')
-                    break
-            if created_at and converted_date:
-                time_to_convert = converted_date - created_at
-                prev_total_response_time += time_to_convert
-                prev_converted_count += 1
-        prev_avg_response_seconds = (prev_total_response_time.total_seconds() / prev_converted_count) if prev_converted_count > 0 else 0
 
-    def calculate_trend(current, previous, is_time=False):
-        if previous == 0:
-            return "N/A" if current == 0 else "+\u221e%" # Infinity symbol
-        change = current - previous
-        percentage_change = (change / previous) * 100
-        if is_time:
-            # For time, a negative change is good (faster)
-            return f"{change/3600:.1f}h" if change < 0 else f"+{change/3600:.1f}h"
-        return f"+{percentage_change:.1f}%" if percentage_change > 0 else f"{percentage_change:.1f}%"
+        # Save both values and trends
+        db.trends.insert_one({
+            "date": datetime.utcnow(),
+            "username": username,
+            "days": days,
+            "category": category,
+            "total_enquiries": total_enquiries,
+            "conversion_rate": conversion_rate,
+            "avg_response": avg_response,
+            "active_enquiries": active_enquiries,
+            "enquiry_trend": enquiry_trend,
+            "conversion_trend": conversion_trend,
+            "response_trend": response_trend,
+            "active_trend": active_trend
+        })
 
-    stats = {
-        'total_enquiries': total_enquiries,
-        'conversion_rate': conversion_rate,
-        'avg_response': avg_response_hours,
-        'active_enquiries': active_enquiries_count,
-        'enquiry_trend': calculate_trend(total_enquiries, prev_total_enquiries),
-        'conversion_trend': calculate_trend(conversion_rate, round((prev_converted / prev_total_enquiries * 100) if prev_total_enquiries > 0 else 0, 1)),
-        'response_trend': calculate_trend(avg_response_seconds, prev_avg_response_seconds, is_time=True),
-        'active_trend': calculate_trend(active_enquiries_count, prev_active_enquiries)
-    }
-    
-    # Stage distribution data
-    stage_counts = defaultdict(int)
-    for e in enquiries:
-        stage_counts[e['current_stage']] += 1
-    stage_labels = list(stage_counts.keys())
-    stage_data = list(stage_counts.values())
-    
-    # Category distribution data
-    category_counts = defaultdict(int)
-    for e in enquiries:
-        category_counts[e['product_info']['category']] += 1
-    category_labels = list(category_counts.keys())
-    category_data = list(category_counts.values())
-    
-    # Timeline data (last 30 days)
-    timeline_labels = []
-    timeline_data = []
-    current_date = start_date
-    while current_date <= end_date:
-        timeline_labels.append(current_date.strftime('%Y-%m-%d'))
-        count = sum(1 for e in enquiries if 
-                   e['created_at'].date() == current_date.date())
-        timeline_data.append(count)
-        current_date += timedelta(days=1)
-    
-    # Top products
-    product_counts = defaultdict(int)
-    for e in enquiries:
-        product_counts[e['product_info']['name']] += 1
-    top_products = sorted(product_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-    product_labels = [p[0] for p in top_products]
-    product_data = [p[1] for p in top_products]
-    
+    # Return the final JSON
     return jsonify({
-        'stats': stats,
-        'stage_labels': stage_labels,
-        'stage_data': stage_data,
-        'category_labels': category_labels,
-        'category_data': category_data,
-        'timeline_labels': timeline_labels,
-        'timeline_data': timeline_data,
-        'product_labels': product_labels,
-        'product_data': product_data
-    }) 
+        "stats": {
+            "total_enquiries": total_enquiries,
+            "conversion_rate": conversion_rate,
+            "avg_response": avg_response,
+            "active_enquiries": active_enquiries,
+            "enquiry_trend": enquiry_trend,
+            "conversion_trend": conversion_trend,
+            "response_trend": response_trend,
+            "active_trend": active_trend
+        },
+        "stage_labels": list(stage_counts.keys()),
+        "stage_data": list(stage_counts.values()),
+        "category_labels": list(category_counts.keys()),
+        "category_data": list(category_counts.values()),
+        "timeline_labels": list(timeline.keys()),
+        "timeline_data": list(timeline.values()),
+        "product_labels": list(product_counts.keys()),
+        "product_data": list(product_counts.values())
+    })
+
+    
+
+
+@app.route('/api/enquiries', methods=['POST'])
+def create_enquiry():
+    data = request.get_json()
+
+    now = datetime.utcnow()
+
+    # Set timestamps and defaults
+    data['created_at'] = now
+    data['current_stage'] = "Enquiry Received"
+    
+    for product in data.get('products', []):
+        product['created_at'] = now
+        product['status'] = "Received"
+
+    data['history'] = [{
+        "stage": "Enquiry Received",
+        "date": now,
+        "changed_by": "Customer",
+        "notes": "Initial enquiry submitted"
+    }]
+
+    # Insert into MongoDB
+    db.enquiries.insert_one(data)
+
+    return jsonify({"message": "Enquiry submitted successfully"}), 201
+
+from pytz import timezone, utc
+
+
+@app.template_filter('to_ist')
+def to_ist(dt):
+    if not dt or not isinstance(dt, datetime):
+        return "N/A"
+    
+    ist = timezone('Asia/Kolkata')
+
+    # Make naive datetime timezone-aware (assume it's in UTC)
+    if dt.tzinfo is None:
+        dt = utc.localize(dt)
+    
+    return dt.astimezone(ist).strftime('%Y-%m-%d %H:%M')
+
+
+
+
 
 @app.errorhandler(404)
 def not_found(error):

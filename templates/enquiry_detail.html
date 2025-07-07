@@ -2,17 +2,23 @@
 <html>
 <head>
     <title>Enquiry Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap & FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
     <style>
-        body { background-color: #f8f9fa; }
-        .card { 
-            margin-bottom: 20px; 
+      body { background-color: #f8f9fa; }
+
+        .card {
+            margin-bottom: 20px;
             box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
             border: none;
             border-radius: 8px;
         }
+
         .card-header {
             background-color: #2b57a5;
             color: white;
@@ -20,117 +26,79 @@
             padding: 12px 20px;
             border-radius: 8px 8px 0 0 !important;
         }
+
+        .info-label { font-weight: bold; width: 35%; color: #2b57a5; }
         .info-table { width: 100%; }
         .info-table td { padding: 8px 5px; border-bottom: 1px solid #dee2e6; }
         .info-table tr:last-child td { border-bottom: none; }
-        .info-label { font-weight: bold; width: 35%; color: #2b57a5; }
-        
-        /* Enhanced Pipeline Styling */
+
         .pipeline-container {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 15px;
-            margin-bottom: 25px;
-            overflow-x: auto;
-        }
-        
+    background: white;
+    border-radius: 700px;
+    width: full;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-bottom: 25px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Edge */
+.pipeline-container::-webkit-scrollbar {
+    display: none;
+}
+
         .pipeline-stages {
             display: flex;
             min-width: 800px;
         }
-        
+
         .pipeline-stages .stage-item {
             flex: 1;
             text-align: center;
-            padding: 15px 5px;
+            padding: 15px 15px 15px 25px;
             position: relative;
             cursor: pointer;
             transition: all 0.3s;
             z-index: 2;
+            color: #495057;
             background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            margin-right: -1px; /* Overlap borders */
-        }
-        
-        .pipeline-stages .stage-item:first-child {
-            border-radius: 4px 0 0 4px;
-        }
-        
-        .pipeline-stages .stage-item:last-child {
-            border-radius: 0 4px 4px 0;
             margin-right: 0;
+            border: none;
+            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
         }
-        
-        .pipeline-stages .stage-item.completed {
-            background-color: #e8f5e9; /* Light green */
-            color: #2b57a5;
-        }
-        
+
+        .pipeline-stages .stage-item:first-child { margin-left: 0; }
+        .pipeline-stages .stage-item:last-child { margin-right: 0; }
+
         .pipeline-stages .stage-item.current {
-            background-color: #2b57a5; /* Brand blue */
+            background-color: #2b57a5;
             color: white;
             font-weight: bold;
-            z-index: 3; /* Ensure it's on top */
+            z-index: 3;
         }
-        
-        .pipeline-stages .stage-item:hover:not(.current) {
-            background-color: #e9ecef;
+
+        .pipeline-stages .stage-item.danger {
+            background-color: #dc3545 !important;
+            color: white !important;
         }
-        
-        .stage-name {
-            font-size: 14px;
-            margin-bottom: 5px;
+
+        .pipeline-stages .stage-item.completed {
+            background-color: #78a0ef;
+            color: white;
+            font-weight: 500;
         }
-        
-        .stage-date {
-            font-size: 12px;
-            color: #6c757d;
+
+        .pipeline-stages .stage-item:hover:not(.current):not(.danger) {
+            background-color: #e2e6ea;
+            color: #343a40;
         }
-        
-        .stage-connector {
-            position: absolute;
-            top: 50%;
-            right: -1px;
-            width: 2px;
-            height: 20px;
-            background: #dee2e6;
-            transform: translateY(-50%);
-            z-index: 1;
-        }
-        
-        /* Stage History Container */
-        .stage-history-container {
-            position: relative;
-            height: 100%;
-        }
-        
-        .stage-history {
-            list-style-type: none;
-            padding-left: 0;
-            max-height: 600px;
-            overflow-y: auto;
-            position: sticky;
-            top: 20px;
-        }
-        
-        .stage-history .stage-item { 
-            padding: 12px; 
-            margin-bottom: 10px; 
-            background-color: #f8f9fa; 
-            border-radius: 6px;
-            border-left: 3px solid #2b57a5;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .stage-history .stage-item.current { 
-            background-color: #dbe5f8; /* Light blue */
-            border-left: 4px solid #2b57a5; /* Brand blue */
-        }
-        
-        /* Badge styling */
+
+        .stage-name { font-size: 14px; margin-bottom: 5px; }
+
         .badge-secondary {
-            background-color: #60ae56 !important; /* Brand green */
+            background-color: #60ae56 !important;
             color: white !important;
             font-weight: 500;
             padding: 8px 15px;
@@ -138,234 +106,187 @@
             border-radius: 20px;
         }
     </style>
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <img src="{{ url_for('static', filename='envirocare_logo.png') }}" alt="Envirocare Logo" style="max-height: 60px; margin-right: 10px;">
-                Shelf Life Study Portal
-            </a>
-            <div class="ml-auto">
-                <a href="/dashboard" class="btn btn-light">Dashboard</a>
-                <a href="/logout" class="btn btn-light ml-2">Logout</a>
-            </div>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <img src="{{ url_for('static', filename='envirocare_logo.png') }}" alt="Envirocare Logo" style="max-height: 60px; margin-right: 10px;">
+            Shelf Life Study Portal
+        </a>
+        <div class="ml-auto">
+            <a href="/dashboard" class="btn btn-light">Dashboard</a>
+            <a href="/logout" class="btn btn-light ml-2">Logout</a>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="mb-1">{{ enquiry.contact_info.company }}</h2>
-                <h4 class="text-muted">{{ enquiry.product_info.name }}</h4>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">{{ enquiry.contact_info.company }}</h2>
+            {% if enquiry.products %}
+            <div class="text-muted font-weight-semibold">
+                {{ enquiry.products | map(attribute='product_name') | reject('equalto', None) | join(', ') }}
             </div>
-            <div class="text-right">
-                <span class="badge badge-secondary p-2">
-                    Current Stage: <strong>{{ enquiry.current_stage }}</strong>
-                </span>
-                <div class="text-muted mt-1">
-                    Received: {{ enquiry.created_at.strftime('%Y-%m-%d %H:%M') }}
-                </div>
-            </div>
+            {% endif %}
         </div>
-
-        <!-- Enhanced Pipeline -->
-        <div class="pipeline-container">
-            <div class="pipeline-stages">
-                {% for stage in all_stages %}
-                {% set stage_completed = false %}
-                {% for hist in enquiry.history if hist.stage == stage %}
-                    {% set stage_completed = true %}
-                {% endfor %}
-                <div class="stage-item 
-                    {% if stage == enquiry.current_stage %}current{% endif %}
-                    {% if stage_completed %}completed{% endif %}"
-                    data-toggle="modal" data-target="#stageModal"
-                    data-stage="{{ stage }}">
-                    <div class="stage-name">{{ stage }}</div>
-                    {% for hist in enquiry.history if hist.stage == stage %}
-                    <div class="stage-connector"></div>
-                    {% endfor %}
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Left Column (Contact, Product, Study Details) -->
-            <div class="col-lg-8">
-                <!-- Contact Information -->
-                <div class="card">
-                    <div class="card-header">Contact Information</div>
-                    <div class="card-body">
-                        <table class="info-table">
-                            <tr>
-                                <td class="info-label">Company Name</td>
-                                <td>{{ enquiry.contact_info.company }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Contact Person</td>
-                                <td>{{ enquiry.contact_info.contact_person }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Designation</td>
-                                <td>{{ enquiry.contact_info.designation }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Phone</td>
-                                <td>{{ enquiry.contact_info.phone }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Email</td>
-                                <td>{{ enquiry.contact_info.email }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Stage Update Modal -->
-                <div class="modal fade" id="stageModal" tabindex="-1" role="dialog" aria-labelledby="stageModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="stageModalLabel">Update Stage</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <form method="POST" action="/update_stage/{{ enquiry._id }}">
-                                <div class="modal-body">
-                                    <div class="modal-stage-name" id="modalStageName"></div>
-                                    <input type="hidden" name="new_stage" id="modalStageInput">
-                                    <div class="form-group">
-                                        <label>Notes on Stage Change</label>
-                                        <textarea name="notes" class="form-control" rows="4" required placeholder="Add remarks about this stage change..."></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary">Update Stage</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Product Information -->
-                <div class="card">
-                    <div class="card-header">Product Information</div>
-                    <div class="card-body">
-                        <table class="info-table">
-                            <tr>
-                                <td class="info-label">Product Name</td>
-                                <td>{{ enquiry.product_info.name }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Ingredients</td>
-                                <td>{{ enquiry.product_info.ingredients }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Category</td>
-                                <td>{{ enquiry.product_info.category }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Packaging Material</td>
-                                <td>{{ enquiry.product_info.packaging }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Sample Quantity</td>
-                                <td>{{ enquiry.product_info.quantity }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Packaging Dimensions</td>
-                                <td>{{ enquiry.product_info.dimensions }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Storage Conditions</td>
-                                <td>{{ enquiry.product_info.storage_condition|join(', ') }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Temp/Humidity Requirements</td>
-                                <td>{{ enquiry.product_info.temp_humidity or 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Expected Shelf Life</td>
-                                <td>{{ enquiry.product_info.expected_shelf_life or 'N/A' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Manufacturing Process</td>
-                                <td>{{ enquiry.product_info.process or 'N/A' }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Study Details -->
-                <div class="card">
-                    <div class="card-header">Study Details</div>
-                    <div class="card-body">
-                        <table class="info-table">
-                            <tr>
-                                <td class="info-label">Testing Condition</td>
-                                <td>{{ enquiry.study_details.testing_condition }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Reason for Testing</td>
-                                <td>{{ enquiry.study_details.reason }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Analysis Type</td>
-                                <td>{{ enquiry.study_details.analysis_type|join(', ') }}</td>
-                            </tr>
-                            <tr>
-                                <td class="info-label">Label Claims</td>
-                                <td>{{ enquiry.study_details.label_claims or 'None' }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column (Stage History) -->
-            <div class="col-lg-4">
-                <div class="stage-history-container">
-                    <div class="card">
-                        <div class="card-header">Stage History</div>
-                        <div class="card-body">
-                            <ul class="stage-history">
-                                {% for entry in enquiry.history|reverse %}
-                                <li class="stage-item {% if entry.stage == enquiry.current_stage %}current{% endif %}">
-                                    <div class="font-weight-bold">{{ entry.stage }}</div>
-                                    <div class="text-muted small">{{ entry.date.strftime('%Y-%m-%d %H:%M') }}</div>
-                                    <div class="text-muted small">By: {{ entry.changed_by }}</div>
-                                    {% if entry.notes %}
-                                    <div class="mt-2">{{ entry.notes }}</div>
-                                    {% endif %}
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+        <div class="text-right">
+            <span class="badge badge-secondary p-2">
+                Current Stage: <strong>{{ enquiry.current_stage }}</strong>
+            </span>
+            <div class="text-muted mt-1">
+                Received: {{ enquiry.created_at | to_ist }}
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    
-    <script>
-        // Handle stage selection in pipeline
-        $('#stageModal').on('show.bs.modal', function (event) {
-            const button = $(event.relatedTarget);
-            const stage = button.data('stage');
-            const modal = $(this);
-            
-            modal.find('#modalStageName').text(stage);
-            modal.find('#modalStageInput').val(stage);
-        });
-    </script>
+    <div class="pipeline-container">
+        <div class="pipeline-stages">
+            {% set danger_stages = ['Study Abandoned', 'Unqualified'] %}
+            {% set is_dangerous_stage = enquiry.current_stage in danger_stages %}
+            {% set current_index = all_stages.index(enquiry.current_stage) %}
+            {% for stage in all_stages %}
+                {% set index = loop.index0 %}
+                {% set is_current = index == current_index %}
+                {% set is_danger = is_current and stage in danger_stages %}
+                {% set is_completed = index < current_index and not is_dangerous_stage %}
+
+                <div class="stage-item
+                    {% if is_current and not is_danger %} current{% endif %}
+                    {% if is_completed %} completed{% endif %}
+                    {% if is_danger %} danger{% endif %}"
+                    data-toggle="modal" data-target="#stageModal"
+                    data-stage="{{ stage }}">
+                    <div class="stage-name">{{ stage }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">Contact Information</div>
+                <div class="card-body">
+                    <table class="info-table">
+                        <tr><td class="info-label">Contact Person</td><td>{{ enquiry.contact_info.contact_person }}</td></tr>
+                        <tr><td class="info-label">Designation</td><td>{{ enquiry.contact_info.designation }}</td></tr>
+                        <tr><td class="info-label">Phone</td><td>{{ enquiry.contact_info.phone }}</td></tr>
+                        <tr><td class="info-label">Email</td><td>{{ enquiry.contact_info.email }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            {% for product in enquiry.products %}
+            <div class="card">
+                <div class="card-header">Product {{ loop.index }}: {{ product.product_name or 'Unnamed Product' }}</div>
+                <div class="card-body">
+                    <table class="info-table">
+                        <tr><td class="info-label">Ingredients</td><td>{{ product.ingredients }}</td></tr>
+                        <tr><td class="info-label">Category</td><td>{{ product.category }}</td></tr>
+                        <tr><td class="info-label">Packaging Material</td><td>{{ product.packaging }}</td></tr>
+                        <tr><td class="info-label">Sample Quantity</td><td>{{ product.quantity }}</td></tr>
+                        <tr><td class="info-label">Dimensions</td><td>{{ product.dimensions }}</td></tr>
+                        <tr><td class="info-label">Storage Condition</td><td>{{ product.storage_condition }}</td></tr>
+                        <tr><td class="info-label">Temp/Humidity</td><td>{{ product.temp_humidity or 'N/A' }}</td></tr>
+                       <tr>
+  <td class="info-label">Custom Temp/Humidity</td>
+  <td>
+    {% if product.temp_humidity_label == 'Other' %}
+      {{ product.custom_temp_humidity or 'N/A' }}
+    {% else %}
+      {{ product.temp_humidity_label or 'N/A' }}
+    {% endif %}
+  </td>
+</tr>
+
+                        <tr><td class="info-label">Expected Shelf Life</td><td>{{ product.expected_shelf_life or 'N/A' }}</td></tr>
+                        <tr><td class="info-label">Reason</td><td>{{ product.reason or 'N/A' }}</td></tr>
+                        <tr><td class="info-label">Analysis Type</td><td>{{ product.analysis_type | join(', ') if product.analysis_type is iterable and product.analysis_type is not string else product.analysis_type }}</td></tr>
+                        <tr><td class="info-label">Label Claims</td><td>{{ product.label_claims or 'None' }}</td></tr>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-4">
+            {% if enquiry.history %}
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header">Stage History</div>
+                <div class="card-body p-2">
+                    <ul class="list-group">
+                        {% for entry in enquiry.history|reverse %}
+                        <li class="list-group-item">
+                            <strong>{{ entry.stage }}</strong> — {{ entry.date | to_ist  }}<br>
+                            <small>By: {{ entry.changed_by }}</small>
+                            {% if entry.notes %}<div>{{ entry.notes }}</div>{% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="stageModal" tabindex="-1" role="dialog" aria-labelledby="stageModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form method="POST" action="/update_stage/{{ enquiry._id }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="stageModalLabel">Update Stage</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to move to the following stage?</p>
+          <h5 id="modalStageName"></h5>
+          <input type="hidden" name="new_stage" id="modalStageInput">
+          <div class="form-group mt-3">
+            <label for="notes">Notes:</label>
+            <textarea name="notes" class="form-control" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  $('#stageModal').on('show.bs.modal', function (event) {
+    const button = $(event.relatedTarget);
+    const stage = button.data('stage');
+    const modal = $(this);
+    modal.find('#modalStageName').text(stage);
+    modal.find('#modalStageInput').val(stage);
+  });
+  $('#stageModal form').on('submit', function (e) {
+    const notes = $(this).find('textarea[name="notes"]').val().trim();
+
+    if (!notes) {
+      e.preventDefault(); // Stop form submission
+      alert('Please enter notes before confirming.'); // Show a message
+    }
+  });
+
+
+
+</script>
+
 </body>
 </html>

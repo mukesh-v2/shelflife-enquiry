@@ -101,7 +101,6 @@
                                 <th>
                                     <div class="d-flex align-items-center">
                                         <span>Stage</span>
-                                        <!-- Fixed filter button with proper dropdown -->
                                         <div class="dropdown ml-1">
                                             <button class="btn btn-sm btn-link p-0" 
                                                     type="button" 
@@ -129,21 +128,23 @@
                                 </th>
                                 <th>Created At</th>
                                 <th>Actions</th>
+                                <th>Sales POC</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for enquiry in enquiries %}
                             <tr>
                                 <td>{{ enquiry.contact_info.company }}</td>
-                                <td>{{ enquiry.product_info.name }}</td>
+                                <td>{{ enquiry.products | map(attribute='product_name') | join(', ') }}</td>
                                 <td>
                                     <span class="badge badge-primary">{{ enquiry.current_stage }}</span>
                                 </td>
-                                <td>{{ enquiry.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ enquiry.created_at | to_ist}}</td>
                                 <td>
                                     <a href="{{ url_for('enquiry_detail', id=enquiry._id) }}" 
                                        class="btn btn-sm btn-outline-primary">View</a>
                                 </td>
+                                <td>{{ enquiry.guide_by | default("NA") }}</td>
                             </tr>
                             {% else %}
                             <tr>
