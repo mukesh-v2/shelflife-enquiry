@@ -123,6 +123,26 @@
             font-size: 0.9rem;
             padding: 5px 15px;
         }
+          .custom-select-box {
+        padding: 8px 12px;
+        font-size: 16px;
+        line-height: 1.5;
+        height: auto;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .custom-select-box option {
+        font-size: 16px;
+        padding: 8px;
+    }
+
+    .form-group label.required-label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+    }
     </style>
 </head>
 <body>
@@ -176,6 +196,23 @@
                                         <input type="email" name="email" class="form-control" required>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-label">Point of Contact</label>
+                                <select name="guide" class="form-control custom-select-box" required>
+                                    <option value="">-- Select Point of Contact --</option>
+                                    <option value="kamalesh.d">Kamalesh D</option>
+                                    <option value="rajeshree.b">Rajeshree B</option>
+                                    <option value="hemant.d">Hemant D</option>
+                                    <option value="shradha.j">Shradha J</option>
+                                    <option value="vishal.k">Vishal K</option>
+                                    <option value="srikant.n">Srikant N</option>
+                                    <option value="tejashri.l">Tejashri L</option>
+                                    <option value="manasi.d">Manasi D</option>
+                                    <option value="Envirocare Labs website">Envirocare Labs Website</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -624,6 +661,7 @@
             phone: form.querySelector('input[name="phone"]').value,
             email: form.querySelector('input[name="email"]').value
         };
+        const guide=form.querySelector('select[name="guide"]').value
 
         document.querySelectorAll(".product-section").forEach((section, index) => {
             const tempHumiditySelect = section.querySelector('select[name="temp_humidity[]"]');
@@ -656,7 +694,7 @@
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ contact_info: contactInfo, products: products })
+            body: JSON.stringify({ contact_info: contactInfo, products: products,guide:guide })
         })
         .then(response => {
             if (!response.ok) throw new Error("Network response was not ok");

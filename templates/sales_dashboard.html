@@ -128,6 +128,7 @@
                                 </th>
                                 <th>Created At</th>
                                 <th>Actions</th>
+                                <th>Sales POC</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -143,6 +144,7 @@
                                     <a href="{{ url_for('enquiry_detail', id=enquiry._id) }}" 
                                        class="btn btn-sm btn-outline-primary">View</a>
                                 </td>
+                                <td>{{ enquiry.guide_by | default("NA") }}</td>
                             </tr>
                             {% else %}
                             <tr>

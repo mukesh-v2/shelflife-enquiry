@@ -40,7 +40,8 @@ def main():
         return
 
     # 6) Prompt for password (hidden input)
-    password = getpass.getpass("Password: ")
+    ##password = getpass.getpass("Password: ")
+    password=input("Password ")
     if not password:
         print("❌  Password cannot be empty.")
         return

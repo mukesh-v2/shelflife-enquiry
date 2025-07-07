@@ -37,7 +37,7 @@
     border-radius: 700px;
     width: full;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 8px;
+    padding: 15px;
     margin-bottom: 25px;
     overflow-x: auto;
     overflow-y: hidden;
@@ -192,7 +192,17 @@
                         <tr><td class="info-label">Dimensions</td><td>{{ product.dimensions }}</td></tr>
                         <tr><td class="info-label">Storage Condition</td><td>{{ product.storage_condition }}</td></tr>
                         <tr><td class="info-label">Temp/Humidity</td><td>{{ product.temp_humidity or 'N/A' }}</td></tr>
-                        <tr><td class="info-label">Custom Temp/Humidity</td><td>{{ product.temp_humidity_label or 'N/A' }}</td></tr>
+                       <tr>
+  <td class="info-label">Custom Temp/Humidity</td>
+  <td>
+    {% if product.temp_humidity_label == 'Other' %}
+      {{ product.custom_temp_humidity or 'N/A' }}
+    {% else %}
+      {{ product.temp_humidity_label or 'N/A' }}
+    {% endif %}
+  </td>
+</tr>
+
                         <tr><td class="info-label">Expected Shelf Life</td><td>{{ product.expected_shelf_life or 'N/A' }}</td></tr>
                         <tr><td class="info-label">Reason</td><td>{{ product.reason or 'N/A' }}</td></tr>
                         <tr><td class="info-label">Analysis Type</td><td>{{ product.analysis_type | join(', ') if product.analysis_type is iterable and product.analysis_type is not string else product.analysis_type }}</td></tr>
