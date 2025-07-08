@@ -201,6 +201,15 @@ def dashboard():
 @login_required
 def enquiry_detail(id):
     enquiry = db.enquiries.find_one({'_id': ObjectId(id)})
+    
+    username = session.get('username')
+    ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n"]
+    if username not in ADMIN_USERS:
+        return render_template('enquiry_details_non_admin.html',
+                         enquiry=enquiry,
+                         all_stages=ALL_STAGES)
+
+    
     return render_template('enquiry_detail.html',
                          enquiry=enquiry,
                          all_stages=ALL_STAGES)
@@ -439,8 +448,23 @@ def to_ist(dt):
     
     return dt.astimezone(ist).strftime('%Y-%m-%d %H:%M')
 
+@app.route("/update-guide", methods=["POST"])
+def update_guide():
+    data = request.get_json()
+    enquiry_id = data["enquiry_id"]
+    new_guide = data["guide_by"]
 
+    # Update the document and append to history
+    db.enquiries.update_one(
+        {"_id": ObjectId(enquiry_id)},
+        {
+            "$set": {
+                "guide_by": new_guide
+            },
+        }
+    )
 
+    return jsonify({"updated_value": new_guide}), 200
 
 
 @app.errorhandler(404)

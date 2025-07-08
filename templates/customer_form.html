@@ -198,23 +198,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="required-label">Point of Contact</label>
-                                <select name="guide" class="form-control custom-select-box" required>
-                                    <option value="">-- Select Point of Contact --</option>
-                                    <option value="kamalesh.d">Kamalesh D</option>
-                                    <option value="rajeshree.b">Rajeshree B</option>
-                                    <option value="hemant.d">Hemant D</option>
-                                    <option value="shradha.j">Shradha J</option>
-                                    <option value="vishal.k">Vishal K</option>
-                                    <option value="srikant.n">Srikant N</option>
-                                    <option value="tejashri.l">Tejashri L</option>
-                                    <option value="manasi.d">Manasi D</option>
-                                    <option value="Envirocare Labs website">Envirocare Labs Website</option>
-                                </select>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Product Information (Dynamic) -->
@@ -661,7 +644,7 @@
             phone: form.querySelector('input[name="phone"]').value,
             email: form.querySelector('input[name="email"]').value
         };
-        const guide=form.querySelector('select[name="guide"]').value
+        const guide=""
 
         document.querySelectorAll(".product-section").forEach((section, index) => {
             const tempHumiditySelect = section.querySelector('select[name="temp_humidity[]"]');
