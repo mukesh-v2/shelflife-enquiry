@@ -33,20 +33,20 @@
         .info-table tr:last-child td { border-bottom: none; }
 
         .pipeline-container {
-    background: white;
-    border-radius: 700px;
-    width: full;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 15px;
-    margin-bottom: 25px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none; /* Firefox */
-}
+        background: white;
+        border-radius: 700px;
+        width: full;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        margin-bottom: 25px;
+        overflow-x: auto;
+        overflow-y: auto;
+        scrollbar-width: thin; /* Firefox */
+    }
 
 /* Hide scrollbar for Chrome, Safari and Edge */
 .pipeline-container::-webkit-scrollbar {
-    display: none;
+    display: 8px;
 }
 
         .pipeline-stages {
@@ -54,20 +54,23 @@
             min-width: 800px;
         }
 
-        .pipeline-stages .stage-item {
+       .pipeline-stages .stage-item {
             flex: 1;
             text-align: center;
-            padding: 15px 15px 15px 25px;
+            padding: 8px 10px 8px 18px;
             position: relative;
             cursor: pointer;
             transition: all 0.3s;
             z-index: 2;
+            font-size: 12px;
             color: #495057;
             background-color: #f8f9fa;
             margin-right: 0;
             border: none;
-            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
+            clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%, 8px 50%);
+            min-width: 80px;
         }
+
 
         .pipeline-stages .stage-item:first-child { margin-left: 0; }
         .pipeline-stages .stage-item:last-child { margin-right: 0; }
@@ -95,7 +98,7 @@
             color: #343a40;
         }
 
-        .stage-name { font-size: 14px; margin-bottom: 5px; }
+        .stage-name { font-size: 12px; margin-bottom: 5px; font-weight: 500;}
 
         .badge-secondary {
             background-color: #60ae56 !important;
