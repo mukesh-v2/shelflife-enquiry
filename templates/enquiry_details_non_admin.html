@@ -176,27 +176,6 @@
                         <tr><td class="info-label">Designation</td><td>{{ enquiry.contact_info.designation }}</td></tr>
                         <tr><td class="info-label">Phone</td><td>{{ enquiry.contact_info.phone }}</td></tr>
                         <tr><td class="info-label">Email</td><td>{{ enquiry.contact_info.email }}</td></tr>
-                        <tr>
-                        <tr>
-                <tr>
-                <td class="info-label">Sales</td>
-                <td>
-                    <select id="guideSelect" name="guide" onchange="updateGuide('{{ enquiry._id }}')"
-                    required
-                            style="width: 100%; max-width: 300px; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <option value="" {% if enquiry.guide_by == "" %}selected{% endif %}>-- Select Point of Contact --</option>
-                    <option value="kamalesh.d" {% if enquiry.guide_by == "kamalesh.d" %}selected{% endif %}>Kamalesh D</option>
-                    <option value="rajeshree.b" {% if enquiry.guide_by == "rajeshree.b" %}selected{% endif %}>Rajeshree B</option>
-                    <option value="hemant.d" {% if enquiry.guide_by == "hemant.d" %}selected{% endif %}>Hemant D</option>
-                    <option value="shradha.j" {% if enquiry.guide_by == "shradha.j" %}selected{% endif %}>Shradha J</option>
-                    <option value="vishal.k" {% if enquiry.guide_by == "vishal.k" %}selected{% endif %}>Vishal K</option>
-                    <option value="srikant.n" {% if enquiry.guide_by == "srikant.n" %}selected{% endif %}>Srikant N</option>
-                    <option value="tejashri.l" {% if enquiry.guide_by == "tejashri.l" %}selected{% endif %}>Tejashri L</option>
-                    <option value="manasi.d" {% if enquiry.guide_by == "manasi.d" %}selected{% endif %}>Manasi D</option>
-                    <option value="Envirocare Labs website" {% if enquiry.guide_by == "Envirocare Labs website" %}selected{% endif %}>Envirocare Labs Website</option>
-                    </select>
-                </td>
-                </tr>
                     </table>
                 </div>
             </div>
