@@ -156,7 +156,7 @@ def dashboard():
     product_filter = request.args.get('product_filter', '')
     stage_filter = request.args.get('stage', '')
     username = session.get('username')
-    ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n"]
+    ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n","chunmei.c"]
     if username not in ADMIN_USERS:
         query['guide_by'] = username 
     
@@ -203,7 +203,7 @@ def enquiry_detail(id):
     enquiry = db.enquiries.find_one({'_id': ObjectId(id)})
     
     username = session.get('username')
-    ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n"]
+    ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n","chunmei.c"]
     if username not in ADMIN_USERS:
         return render_template('enquiry_details_non_admin.html',
                          enquiry=enquiry,
@@ -249,7 +249,7 @@ def get_analytics_data():
     category = request.args.get('category')
     username = session.get('username')
     print("From data " + str(username))
-    ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n"]
+    ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n","chunmei.c"]
 
     # Apply filter for date
     date_filter = {}
