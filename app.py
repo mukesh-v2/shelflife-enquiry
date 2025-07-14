@@ -380,6 +380,27 @@ def get_analytics_data():
             "response_trend": response_trend,
             "active_trend": active_trend
         })
+        
+        
+    if days and days != "all":
+        start_date = (datetime.utcnow() - timedelta(days=int(days))).date()
+    else:
+        if timeline:
+            start_date = min(datetime.strptime(d, "%Y-%m-%d").date() for d in timeline.keys())
+        else:
+            start_date = datetime.utcnow().date()
+
+    end_date = datetime.utcnow().date()
+
+    # Fill in missing dates with 0
+    full_dates = []
+    filled_timeline = []
+    delta = (end_date - start_date).days
+    for i in range(delta + 1):
+        day = start_date + timedelta(days=i)
+        date_str = day.strftime("%Y-%m-%d")
+        full_dates.append(date_str)
+        filled_timeline.append(timeline.get(date_str, 0))    
 
     # Return the final JSON
     return jsonify({
@@ -397,8 +418,8 @@ def get_analytics_data():
         "stage_data": list(stage_counts.values()),
         "category_labels": list(category_counts.keys()),
         "category_data": list(category_counts.values()),
-        "timeline_labels": list(timeline.keys()),
-        "timeline_data": list(timeline.values()),
+        "timeline_labels": full_dates,
+        "timeline_data": filled_timeline,
         "product_labels": list(product_counts.keys()),
         "product_data": list(product_counts.values())
     })
