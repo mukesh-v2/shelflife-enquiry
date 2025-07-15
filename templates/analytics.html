@@ -128,10 +128,17 @@
                     </div>
                     <div class="col-md-4">
                         <select class="form-control" id="categoryFilter">
-                            <option value="all">All Categories</option>
-                            {% for category in categories %}
-                            <option value="{{ category }}">{{ category }}</option>
-                            {% endfor %}
+                            <option value="all">POC</option>
+                            <option value="kamalesh.d">Kamalesh D</option>
+                            <option value="rajeshree.b">Rajeshree B</option>
+                            <option value="hemant.d">Hemant D</option>
+                            <option value="shradha.j">Shradha J</option>
+                            <option value="vishal.k">Vishal K</option>
+                            <option value="srikant.n">Srikant N</option>
+                            <option value="tejashri.l">Tejashri L</option>
+                            <option value="manasi.d">Manasi D</option>
+                            <option value="yug.b">Yug B</option>
+                            <option value="Envirocare Labs website">Envirocare Labs Website</option>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -245,13 +252,17 @@
             document.getElementById('activeTrend').textContent = stats.active_trend;
 
             document.getElementById('enquiryTrend').className =
-                'stat-trend ' + (stats.enquiry_trend.includes('+') ? 'trend-up' : 'trend-down');
+            'stat-trend ' + (stats.enquiry_trend.includes('-') ? 'trend-up' : 'trend-down');
+
             document.getElementById('conversionTrend').className =
-                'stat-trend ' + (stats.conversion_trend.includes('+') ? 'trend-up' : 'trend-down');
+            'stat-trend ' + (stats.conversion_trend.includes('-') ? 'trend-up' : 'trend-down');
+
             document.getElementById('responseTrend').className =
-                'stat-trend ' + (stats.response_trend.includes('-') ? 'trend-down' : 'trend-up');
+            'stat-trend ' + (stats.response_trend.includes('-') ? 'trend-up' : 'trend-down');
+
             document.getElementById('activeTrend').className =
-                'stat-trend ' + (stats.active_trend.includes('+') ? 'trend-up' : 'trend-down');
+            'stat-trend ' + (stats.active_trend.includes('-') ? 'trend-up' : 'trend-down');
+
         }
 
         const stageChart = new Chart(document.getElementById('stageChart').getContext('2d'), {

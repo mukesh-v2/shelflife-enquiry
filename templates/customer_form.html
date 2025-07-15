@@ -358,9 +358,11 @@
                         </div>
                     </div>
 
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-brand btn-brand-lg">Submit Enquiry</button>
+                    <form>
+                        <div class="text-center mt-4">
+                        <button type="submit" id="submitBtn" class="btn btn-brand btn-brand-lg">Submit Enquiry</button>
                     </div>
+                    </form>
                 </form>
             </div>
         </div>
@@ -368,6 +370,16 @@
 
     <script>
         let productCount = 1;
+
+        const form=document.querySelector('form')
+        const submitBtn = document.getElementById('submitBtn')
+
+        form.addEventListener('submit', function (e) {
+            console.log("Hello");
+            submitBtn.disabled = true
+            submitBtn.textContent = 'Submitting...'
+        })
+
         
         function addProduct() {
             productCount++;

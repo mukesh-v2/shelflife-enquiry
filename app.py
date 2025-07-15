@@ -250,6 +250,8 @@ def get_analytics_data():
     username = session.get('username')
     print("From data " + str(username))
     ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n","chunmei.c"]
+    
+    print(category)
 
     # Apply filter for date
     date_filter = {}
@@ -260,10 +262,12 @@ def get_analytics_data():
 
     query = {**date_filter}
     if category and category != "all":
-        query["products.category"] = category
+        query["guide_by"] = category
 
     if username not in ADMIN_USERS:
         query['guide_by'] = username
+        
+  
 
     enquiries = list(db.enquiries.find(query))
 
