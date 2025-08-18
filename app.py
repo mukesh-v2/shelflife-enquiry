@@ -304,7 +304,7 @@ def get_analytics_data():
         else:
             active_enquiries += 1  # no history = assume active
 
-    CONVERTED_STAGE = ["Converted", "Payment Received"]
+    CONVERTED_STAGE = ["Converted", "Payment Received", "Report Generated"]
     rate_num = 0
     for e in enquiries:
         history = e.get("history", [])
