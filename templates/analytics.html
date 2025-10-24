@@ -5,6 +5,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .analytics-container {
@@ -102,13 +105,30 @@
         <div class="container">
             <a class="navbar-brand" href="#">
                 <img src="{{ url_for('static', filename='envirocare_logo.png') }}" alt="Envirocare Logo" style="max-height: 60px; margin-right: 10px;">
-                Shelf Life Study Analytics
+                Shelf Life Study Portal
             </a>
-            <div class="ml-auto">
-                <a href="/dashboard" class="btn btn-light">Dashboard</a>
-                <a href="/logout" class="btn btn-light ml-2">Logout</a>
+            <div class="ml-auto d-flex align-items-center">
+                <span class="text-white mr-3">Hello, {{ session.get('username', 'User') }}</span>
+                <div class="dropdown mr-2">
+                    <button class="btn btn-light dropdown-toggle" type="button" id="analyticsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-chart-bar mr-1"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="analyticsDropdown">
+                        <a class="dropdown-item" href="/analytics">Dashboard Analytics</a>
+                        <a class="dropdown-item" href="/mis-export">MIS</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" id="accountDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-user-circle mr-1"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
+                    <a class="dropdown-item" href="/dashboard">Dashboard</a>
+                    <a class="dropdown-item" href="/logout">Logout</a>
+                </div>
             </div>
         </div>
+    </div>
     </nav>
 
     <div class="analytics-container">
@@ -154,6 +174,11 @@
                     <div class="stat-label">Total Enquiries</div>
                     <div class="stat-value" id="totalEnquiries">0</div>
                     <div class="stat-trend trend-up" id="enquiryTrend">Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Net Sales</div>
+                    <div class="stat-value" id="netSales">₹0</div>
+                    <div class="stat-trend trend-up" id="salesTrend">Loading...</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Conversion Rate</div>
@@ -245,6 +270,7 @@
             document.getElementById('conversionRate').textContent = stats.conversion_rate + '%';
             document.getElementById('avgResponse').textContent = stats.avg_response + 'h';
             document.getElementById('activeEnquiries').textContent = stats.active_enquiries;
+            document.getElementById('netSales').textContent = '₹' + (stats.net_sales || 0);
 
             document.getElementById('enquiryTrend').textContent = stats.enquiry_trend;
             document.getElementById('conversionTrend').textContent = stats.conversion_trend;
@@ -365,6 +391,66 @@
             updateCharts(data);
         });
     });
+</script>
+{% include 'loading_overlay.html' %}
+
+<script>
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    // Show loading for any navigation
+    document.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A' && e.target.href && !e.target.href.includes('#')) {
+            showLoading();
+        }
+    });
+
+    // Hide loading when page loads
+    window.addEventListener('load', function() {
+        hideLoading();
+    });
+</script>
+<script>
+window.onload = function() {
+    var overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'none';
+};
+// If using jQuery (recommended for smoother cross-browser):
+ $(window).on("load", function() { $("#loadingOverlay").fadeOut(); });
+</script>
+<script>
+window.addEventListener("pageshow", function(event) {
+    var overlay = document.getElementById('loadingOverlay');
+    if (overlay && event.persisted) overlay.style.display = 'none';
+});
+</script>
+<script>
+    function loadAnalyticsData() {
+        // Show loading state
+        document.querySelectorAll('.stat-value').forEach(el => el.textContent = '...');
+        document.querySelectorAll('.chart-container').forEach(el => {
+            el.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+        });
+        
+        const timeFilter = document.getElementById('timeFilter').value;
+        const categoryFilter = document.getElementById('categoryFilter').value;
+
+        fetch(`/analytics/data?days=${timeFilter}&category=${categoryFilter}`)
+            .then(response => response.json())
+            .then(data => {
+                updateSummaryStats(data.stats);
+                updateCharts(data);
+            })
+            .catch(error => {
+                console.error('Error loading analytics data:', error);
+                // Show error state
+            });
+    }
 </script>
 </body>
 </html>

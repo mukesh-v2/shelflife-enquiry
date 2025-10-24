@@ -1,0 +1,23 @@
+<!-- mis_report_download.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MIS Report Export</title>
+</head>
+<body>
+    <h2>Export MIS Report (Excel)</h2>
+    <form id="misExport">
+        <label>From Date: <input type="date" name="start_date" required/></label>
+        <label>To Date: <input type="date" name="end_date" required/></label>
+        <button type="submit">Download</button>
+    </form>
+    <script>
+        document.getElementById('misExport').onsubmit = function(e) {
+            e.preventDefault();
+            const start = this.start_date.value;
+            const end = this.end_date.value;
+            window.location.href = '/mis-report.xlsx?start_date=' + start + '&end_date=' + end;
+        };
+    </script>
+</body>
+</html>

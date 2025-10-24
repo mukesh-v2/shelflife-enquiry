@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from flask_socketio import SocketIO
 from werkzeug.security import generate_password_hash, check_password_hash
 from zoneinfo import ZoneInfo
+import pandas as pd
+from flask import send_file
 import os
 import re
 
@@ -173,8 +175,31 @@ def dashboard():
     if stage_filter:
         query['current_stage'] = stage_filter
 
-    # Fetch filtered enquiries
-    enquiries = list(db.enquiries.find(query).sort([('created_at', -1)]))
+    # Pagination parameters
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 10))
+    
+    # Calculate skip value for pagination
+    skip = (page - 1) * per_page
+
+    # Get total count for pagination
+    total_enquiries = db.enquiries.count_documents(query)
+    
+    # Calculate pagination info
+    total_pages = (total_enquiries + per_page - 1) // per_page
+    has_prev = page > 1
+    has_next = page < total_pages
+
+    # Calculate showing range
+    showing_from = ((page - 1) * per_page) + 1
+    showing_to = min(page * per_page, total_enquiries)
+    
+    # Calculate pagination range for template
+    start_page = max(1, page - 2)
+    end_page = min(total_pages, page + 2)
+
+    # Fetch filtered enquiries with pagination
+    enquiries = list(db.enquiries.find(query).sort([('created_at', -1)]).skip(skip).limit(per_page))
 
     # Get unique companies for filter dropdown
     all_enquiries = list(db.enquiries.find({}))
@@ -188,12 +213,22 @@ def dashboard():
     ))) if all_enquiries else []
     
   
-    # ✅ Render template with raw MongoDB objects
+    # ✅ Render template with raw MongoDB objects and pagination info
     return render_template('sales_dashboard.html',
                            enquiries=enquiries,
                            unique_companies=unique_companies,
                            unique_products=unique_products,
-                           request=request)
+                           request=request,
+                           page=page,
+                           per_page=per_page,
+                           total_pages=total_pages,
+                           total_enquiries=total_enquiries,
+                           has_prev=has_prev,
+                           has_next=has_next,
+                           showing_from=showing_from,
+                           showing_to=showing_to,
+                           start_page=start_page,
+                           end_page=end_page)
 
 
 
@@ -248,144 +283,183 @@ def get_analytics_data():
     days = request.args.get('days')
     category = request.args.get('category')
     username = session.get('username')
-    print("From data " + str(username))
     ADMIN_USERS = ['admin','admin1',"manasi.d","mukesh.a","soumya.n","rahul.j","reshmi.n","chunmei.c"]
     
-    print(category)
-
-    # Apply filter for date
-    date_filter = {}
+    # Build base query
+    query = {}
+    if username not in ADMIN_USERS:
+        query['guide_by'] = username
+    
+    # Apply date filter
     if days and days != "all":
-        date_filter["created_at"] = {
+        query["created_at"] = {
             "$gte": datetime.utcnow() - timedelta(days=int(days))
         }
-
-    query = {**date_filter}
+    
     if category and category != "all":
         query["guide_by"] = category
 
-    if username not in ADMIN_USERS:
-        query['guide_by'] = username
-        
-  
-
-    enquiries = list(db.enquiries.find(query))
-
-    # Prepare response
-    total_enquiries = len(enquiries)
-    all_products = [p for e in enquiries for p in e.get("products", [])]
-    completed = [p for p in all_products if p.get("status") == "completed"]
-    category_counts = {}
+    # Use MongoDB aggregation pipeline for efficient data processing
+    pipeline = [
+        {"$match": query},
+        {
+            "$group": {
+                "_id": None,
+                "total_enquiries": {"$sum": 1},
+                'net_sales': {'$sum': {'$ifNull': ['$order_value', 0]}},
+                "stage_counts": {
+                    "$push": "$current_stage"
+                },
+                "timeline_data": {
+                    "$push": {
+                        "$dateToString": {
+                            "format": "%Y-%m-%d",
+                            "date": "$created_at"
+                        }
+                    }
+                },
+                "products_data": {
+                    "$push": "$products"
+                },
+                "history_data": {
+                    "$push": "$history"
+                }
+            }
+        },
+        {
+            "$project": {
+                "total_enquiries": 1,
+                "stage_counts": 1,
+                "timeline_data": 1,
+                "products_data": 1,
+                "history_data": 1,
+                "net_sales": 1
+            }
+        }
+    ]
+    
+    result = list(db.enquiries.aggregate(pipeline))
+    if result:
+        data = result[0]
+        net_sales = data.get('net_sales', 0)
+    else:
+        net_sales = 0
+    if not result:
+        return jsonify({
+            "stats": {
+                "total_enquiries": 0,
+                "conversion_rate": 0,
+                "avg_response": 0,
+                "active_enquiries": 0,
+                "enquiry_trend": "+0%",
+                "conversion_trend": "+0%",
+                "response_trend": "+0%",
+                "active_trend": "+0%",
+                'net_sales': 0
+            },
+            "stage_labels": [],
+            "stage_data": [],
+            "category_labels": [],
+            "category_data": [],
+            "timeline_labels": [],
+            "timeline_data": [],
+            "product_labels": [],
+            "product_data": []
+        })
+    
+    data = result[0]
+    total_enquiries = data['total_enquiries']
+    
+    # Process stage counts efficiently
     stage_counts = {}
-    product_counts = {}
-    timeline = {}
-
-    for e in enquiries:
-        stage = e.get("current_stage", "Unknown")
+    for stage in data['stage_counts']:
         stage_counts[stage] = stage_counts.get(stage, 0) + 1
-        date_key = e.get("created_at", datetime.now(ZoneInfo("Asia/Kolkata"))).strftime("%Y-%m-%d")
-        timeline[date_key] = timeline.get(date_key, 0) + 1
-
-        for p in e.get("products", []):
-            cat = p.get("category", "Uncategorized")
+    
+    # Process timeline efficiently
+    timeline = {}
+    for date_str in data['timeline_data']:
+        timeline[date_str] = timeline.get(date_str, 0) + 1
+    
+    # Process products efficiently
+    category_counts = {}
+    product_counts = {}
+    for products in data['products_data']:
+        for product in products:
+            cat = product.get("category", "Uncategorized")
             category_counts[cat] = category_counts.get(cat, 0) + 1
-            name = p.get("product_name", "Unnamed")
+            name = product.get("product_name", "Unnamed")
             product_counts[name] = product_counts.get(name, 0) + 1
-
+    
+    # Process active enquiries and conversion rate efficiently
     INACTIVE_STAGES = {"Converted", "Payment Recieved", "Unqualified", "Study Abandoned", "Report Generated"}
-
+    CONVERTED_STAGES = {"Converted", "Payment Received", "Report Generated"}
+    
     active_enquiries = 0
-    for e in enquiries:
-        history = e.get("history", [])
+    converted_count = 0
+    response_times = []
+    
+    for history in data['history_data']:
         if history:
             last_stage = history[-1].get("stage")
             if last_stage not in INACTIVE_STAGES:
                 active_enquiries += 1
+            if last_stage in CONVERTED_STAGES:
+                converted_count += 1
+            
+            # Calculate response time
+            if len(history) >= 2:
+                stage0_time = history[0].get("date")
+                stage1_time = history[1].get("date")
+                if stage0_time and stage1_time:
+                    t1 = stage0_time if isinstance(stage0_time, datetime) else datetime.fromisoformat(stage0_time)
+                    t2 = stage1_time if isinstance(stage1_time, datetime) else datetime.fromisoformat(stage1_time)
+                    delta = (t2 - t1).total_seconds() / 3600
+                    response_times.append(delta)
         else:
-            active_enquiries += 1  # no history = assume active
-
-    CONVERTED_STAGE = ["Converted", "Payment Received", "Report Generated"]
-    rate_num = 0
-    for e in enquiries:
-        history = e.get("history", [])
-        if history:
-            last_stage = history[-1].get("stage")
-            if last_stage in CONVERTED_STAGE:
-                rate_num += 1
-
-    response_times = []
-    for e in enquiries:
-        history = e.get("history", [])
-
-        if len(history) >= 2:
-            stage0_time = history[0].get("date")
-            stage1_time = history[1].get("date")
-
-            if stage0_time and stage1_time:
-                t1 = stage0_time if isinstance(stage0_time, datetime) else datetime.fromisoformat(stage0_time)
-                t2 = stage1_time if isinstance(stage1_time, datetime) else datetime.fromisoformat(stage1_time)
-                delta = (t2 - t1).total_seconds() / 3600  # convert seconds to hours
-                response_times.append(delta)
-
-    # Calculate average response time in hours
+            active_enquiries += 1
+    
+    # Calculate metrics
+    conversion_rate = round(converted_count / total_enquiries * 100, 2) if total_enquiries else 0
     avg_response = round(sum(response_times) / len(response_times), 2) if response_times else 0
-
-    conversion_rate = round(rate_num / len(enquiries) * 100, 2) if enquiries else 0
-
+    
+    # Get trends (simplified - you might want to cache this)
     prev_trend = db.trends.find_one(
         {"username": username, "days": days, "category": category},
         sort=[("date", DESCENDING)]
     )
-
-    # --- Step 2: Calculate trends ---
+    
     def trend_percent(new, old):
         if old == 0:
             return "+0%"
         change = ((new - old) / old) * 100 if old else 0
         sign = "+" if change >= 0 else "-"
         return f"{sign}{abs(round(change))}%"
-
+    
     if prev_trend:
-        if prev_trend.get("total_enquiries") == total_enquiries:
-            enquiry_trend = prev_trend.get("enquiry_trend", "+0%")
-        else:
-            enquiry_trend = trend_percent(total_enquiries, prev_trend.get("total_enquiries", 0))
-        
-        if prev_trend.get("conversion_rate") == conversion_rate:
-            conversion_trend = prev_trend.get("conversion_trend", "+0%")
-        else:
-            conversion_trend = trend_percent(conversion_rate, prev_trend.get("conversion_rate", 0))
-
-        if prev_trend.get("avg_response") == avg_response:
-            response_trend = prev_trend.get("response_trend", "+0%")
-        else:
-            response_trend = trend_percent(avg_response, prev_trend.get("avg_response", 0))
-
-        if prev_trend.get("active_enquiries") == active_enquiries:
-            active_trend = prev_trend.get("active_trend", "+0%")
-        else:
-            active_trend = trend_percent(active_enquiries, prev_trend.get("active_enquiries", 0))
+        enquiry_trend = trend_percent(total_enquiries, prev_trend.get("total_enquiries", 0))
+        conversion_trend = trend_percent(conversion_rate, prev_trend.get("conversion_rate", 0))
+        response_trend = trend_percent(avg_response, prev_trend.get("avg_response", 0))
+        active_trend = trend_percent(active_enquiries, prev_trend.get("active_enquiries", 0))
     else:
         enquiry_trend = conversion_trend = response_trend = active_trend = "+0%"
-
-
-        # Save both values and trends
-        db.trends.insert_one({
-            "date": datetime.utcnow(),
-            "username": username,
-            "days": days,
-            "category": category,
-            "total_enquiries": total_enquiries,
-            "conversion_rate": conversion_rate,
-            "avg_response": avg_response,
-            "active_enquiries": active_enquiries,
-            "enquiry_trend": enquiry_trend,
-            "conversion_trend": conversion_trend,
-            "response_trend": response_trend,
-            "active_trend": active_trend
-        })
-        
-        
+    
+    # Save current trends
+    db.trends.insert_one({
+        "date": datetime.utcnow(),
+        "username": username,
+        "days": days,
+        "category": category,
+        "total_enquiries": total_enquiries,
+        "conversion_rate": conversion_rate,
+        "avg_response": avg_response,
+        "active_enquiries": active_enquiries,
+        "enquiry_trend": enquiry_trend,
+        "conversion_trend": conversion_trend,
+        "response_trend": response_trend,
+        "active_trend": active_trend
+    })
+    
+    # Generate timeline data efficiently
     if days and days != "all":
         start_date = (datetime.utcnow() - timedelta(days=int(days))).date()
     else:
@@ -393,10 +467,8 @@ def get_analytics_data():
             start_date = min(datetime.strptime(d, "%Y-%m-%d").date() for d in timeline.keys())
         else:
             start_date = datetime.utcnow().date()
-
+    
     end_date = datetime.utcnow().date()
-
-    # Fill in missing dates with 0
     full_dates = []
     filled_timeline = []
     delta = (end_date - start_date).days
@@ -404,9 +476,8 @@ def get_analytics_data():
         day = start_date + timedelta(days=i)
         date_str = day.strftime("%Y-%m-%d")
         full_dates.append(date_str)
-        filled_timeline.append(timeline.get(date_str, 0))    
-
-    # Return the final JSON
+        filled_timeline.append(timeline.get(date_str, 0))
+    
     return jsonify({
         "stats": {
             "total_enquiries": total_enquiries,
@@ -416,7 +487,8 @@ def get_analytics_data():
             "enquiry_trend": enquiry_trend,
             "conversion_trend": conversion_trend,
             "response_trend": response_trend,
-            "active_trend": active_trend
+            "active_trend": active_trend,
+            'net_sales': net_sales
         },
         "stage_labels": list(stage_counts.keys()),
         "stage_data": list(stage_counts.values()),
@@ -488,9 +560,81 @@ def update_guide():
             },
         }
     )
-
     return jsonify({"updated_value": new_guide}), 200
 
+@app.route('/update-order-value', methods=['POST'])
+@login_required
+def update_order_value():
+    data = request.get_json()
+    enquiry_id = data.get('enquiry_id', '').strip()
+    order_value = float(data.get('order_value', 0))  # default 0
+
+    if not enquiry_id or len(enquiry_id) != 24:
+        return jsonify({'error': 'Invalid enquiry_id'}), 400
+    try:
+        result = db.enquiries.update_one({'_id': ObjectId(enquiry_id)}, {'$set': {'order_value': order_value}})
+        if result.modified_count == 1:
+            return jsonify({'updated_value': order_value}), 200
+        else:
+            return jsonify({'error': 'No record updated'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500 
+
+@app.route('/mis-report.xlsx', methods=['GET'])
+@login_required
+def mis_report():
+    # Parse date range from query params
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+
+    query = {}
+    # Filter by created_at if dates provided
+    if start_date and end_date:
+        query['created_at'] = {
+            '$gte': datetime.strptime(start_date, "%Y-%m-%d"),
+            '$lte': datetime.strptime(end_date, "%Y-%m-%d")
+        }
+
+    enquiries = list(db.enquiries.find(query))
+    rows = []
+    for enquiry in enquiries:
+        # Flatten info, handle missing fields
+        row = {
+            'Enquiry ID': str(enquiry.get('_id', '')),
+            'Company': enquiry.get('contact_info', {}).get('company', ''),
+            'Contact Person': enquiry.get('contact_info', {}).get('person', ''),
+            'Designation': enquiry.get('contact_info', {}).get('designation', ''),
+            'Phone': enquiry.get('contact_info', {}).get('phone', ''),
+            'Email': enquiry.get('contact_info', {}).get('email', ''),
+            'Guide': enquiry.get('guide_by', ''),
+            'Order Value': enquiry.get('order_value', ''),
+            'Current Stage': enquiry.get('current_stage', ''),
+            'Created At': enquiry.get('created_at', ''),
+        }
+        # Products: flatten all products into string
+        products = enquiry.get('products', [])
+        row['Products'] = '; '.join(
+            [f"{p.get('product_name', '')} ({p.get('category', '')}, {p.get('sample_qty', '')})"
+             for p in products]
+        )
+        # History: flatten all changes
+        histories = enquiry.get('history', [])
+        row['History'] = '; '.join(
+            [f"{h.get('stage', '')} @ {h.get('date', '')} by {h.get('changed_by','')}" 
+             for h in histories]
+        )
+        rows.append(row)
+    import pandas as pd
+    df = pd.DataFrame(rows)
+    filename = 'mis_report.xlsx'
+    df.to_excel(filename, index=False)
+    from flask import send_file
+    return send_file(filename, as_attachment=True)
+
+@app.route('/mis-export')
+@login_required
+def mis_export_ui():
+    return render_template('mis_report_download.html')
 
 @app.errorhandler(404)
 def not_found(error):

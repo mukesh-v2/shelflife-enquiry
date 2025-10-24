@@ -2,150 +2,649 @@
 <html>
 <head>
     <title>Shelf Life Study Enquiry</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .form-container {
+        :root {
+            --primary-color: #2b57a5;
+            --secondary-color: #60ae56;
+            --accent-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --white: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #6c757d;
+            --border-color: #e9ecef;
+            --shadow-light: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-medium: 0 4px 20px rgba(0,0,0,0.12);
+            --shadow-heavy: 0 8px 30px rgba(0,0,0,0.15);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #f8f9fa 100%);
             min-height: 100vh;
+            padding: 20px;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { background: linear-gradient(135deg, #f8f9fa 0%, #f8f9fa 100%); }
+            50% { background: linear-gradient(135deg, #f8f9fa 0%, #f8f9fa 100%); }
+        }
+
+        .form-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            background-color: #f8f9fa;
+            min-height: calc(100vh - 40px);
+            animation: fadeInUp 0.8s ease-out;
         }
-        
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .form-wrapper {
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             position: relative;
         }
-        
+
         .form-header {
-            background-color: #60ae56; /* Brand green */
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             text-align: center;
-            padding: 20px 0;
-            border-radius: 10px 10px 0 0;
-            z-index: 10;
+            padding: 30px 20px;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
             position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+            box-shadow: var(--shadow-medium);
         }
-        
+
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
         .brand-logo {
             max-height: 80px;
-            margin: 0 auto 10px;
+            margin: 0 auto 15px;
             display: block;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            animation: logoFloat 3s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
         }
-        
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-5px) scale(1.02); }
+        }
+
         .form-heading {
             color: white;
             font-weight: 700;
             margin: 0;
-            font-size: 1.8rem;
-        }
-        
-        .form-card {
-            border-top-left-radius: 0 !important;
-            border-top-right-radius: 0 !important;
-            margin-top: -1px; /* Ensures seamless connection */
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            font-size: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
             position: relative;
-            z-index: 5;
-            padding: 20px;
+            z-index: 1;
         }
-        
-        .section-card {
-            margin-bottom: 20px;
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-        
-        .section-card .card-header {
-            background-color: #2b57a5; /* Brand blue */
-            font-size: 1.2rem;
-            padding: 12px 20px;
-        }
-        
-        .required-label::after {
-            content: " *";
-            color: #e32;
-        }
-        
-        .btn-brand-lg {
-            padding: 12px 30px;
+
+        .form-subtitle {
+            color: rgba(255,255,255,0.9);
             font-size: 1.1rem;
+            margin-top: 8px;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-card {
+            background: var(--white);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: var(--shadow-heavy);
+            position: relative;
+            overflow: hidden;
+            animation: slideInUp 0.6s ease-out 0.2s both;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            background-size: 200% 100%;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .section-card {
+            margin-bottom: 25px;
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            transition: var(--transition);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .section-card .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #3d6bb3 100%);
+            color: white;
+            font-size: 1.3rem;
             font-weight: 600;
+            padding: 20px 25px;
+            border: none;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .product-section {
-            margin-bottom: 20px;
-            border: 1px solid #dee2e6;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        
-        .remove-product {
-            color: #dc3545;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        
-        .add-product {
-            margin-top: 20px;
-        }
-        
-        .custom-select {
-            padding: 10px 20px;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            background-color: white;
+
+        .section-card .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .section-card:hover .card-header::before {
+            left: 100%;
+        }
+
+        .card-body {
+            padding: 30px;
+            background: var(--white);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            display: block;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .form-group label.required-label::after {
+            content: " *";
+            color: var(--danger-color);
+            font-weight: 700;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 7px 11px;
             font-size: 0.9rem;
-            color: #495057;
+            height: auto;
+            width: 100%;
+            transition: var(--transition);
+            background: var(--white);
+            position: relative;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(96, 174, 86, 0.15);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .form-control:hover {
+            border-color: #c0c0c0;
+        }
+
+        .form-control::placeholder {
+            font-size: 0.85rem;
+            color: #adb5bd;
+            opacity: 0.8;
+        }
+
+        .custom-select {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23343a40' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 10px center;
+            background-position: right 12px center;
             background-size: 16px 16px;
-            overflow: visible !important;
-            min-height: 41px;
+            padding-right: 40px;
         }
-        
-        .custom-select:focus {
-            border-color: #60ae56;
-            box-shadow: 0 0 0 0.2rem rgba(96, 174, 86, 0.25);
-            outline: none;
+
+        .form-check {
+            margin-bottom: 12px;
+            position: relative;
         }
-        
-        .custom-select option {
-            color: #495057;
+
+        .form-check-input {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .form-check-label {
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+
+        .form-check:hover .form-check-label {
+            color: var(--primary-color);
+        }
+
+        .product-section {
+            margin-bottom: 30px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            position: relative;
+            transition: var(--transition);
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .product-section:hover {
+            border-color: var(--secondary-color);
+            box-shadow: var(--shadow-light);
+            transform: translateY(-2px);
+        }
+
+        .product-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px 0 0 2px;
+        }
+
+        .remove-product {
+            color: var(--danger-color);
+            cursor: pointer;
             font-size: 0.9rem;
-            padding: 5px 15px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border: 2px solid var(--danger-color);
+            border-radius: 90px;
+            background: white;
+            transition: var(--transition);
+            display: inline-block;
+            position: absolute;
+            top: 8px;
+            right: 15px;
         }
-          .custom-select-box {
-        padding: 8px 12px;
-        font-size: 16px;
-        line-height: 1.5;
-        height: auto;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
 
-    .custom-select-box option {
-        font-size: 16px;
-        padding: 8px;
-    }
+        .remove-product:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: scale(1.05);
+        }
 
-    .form-group label.required-label {
-        font-weight: 600;
-        margin-bottom: 6px;
-        display: block;
-    }
+        .add-product {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .btn-brand {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 25px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-brand::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-brand:hover::before {
+            left: 100%;
+        }
+
+        .btn-brand:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-brand:active {
+            transform: translateY(0);
+        }
+
+        .btn-brand-lg {
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .btn-add-product {
+            background: linear-gradient(135deg, var(--accent-color) 0%, #f1c40f 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 25px;
+            border-radius: 25px;
+            transition: var(--transition);
+        }
+
+        .btn-add-product:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .progress-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            z-index: 1000;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .floating-labels {
+            position: relative;
+        }
+
+        .floating-labels .form-control {
+            padding-top: 20px;
+            padding-bottom: 8px;
+        }
+
+        .floating-labels label {
+            position: absolute;
+            top: 12px;
+            left: 16px;
+            color: var(--text-muted);
+            transition: var(--transition);
+            pointer-events: none;
+            background: white;
+            padding: 0 4px;
+        }
+
+        .floating-labels .form-control:focus + label,
+        .floating-labels .form-control:not(:placeholder-shown) + label {
+            top: -8px;
+            left: 12px;
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #4caf50 100%);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-bottom: 20px;
+            animation: slideInDown 0.5s ease-out;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #c0392b 100%);
+            color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .section-number {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .form-step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--border-color);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .step.active {
+            background: var(--secondary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step.completed {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step-line {
+            width: 50px;
+            height: 2px;
+            background: var(--border-color);
+            margin-top: 19px;
+        }
+
+        .step-line.completed {
+            background: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 10px;
+            }
+            
+            .form-heading {
+                font-size: 1.5rem;
+            }
+            
+            .card-body {
+                padding: 20px;
+            }
+            
+            .product-section {
+                padding: 20px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Progress Indicator -->
+    <div class="progress-indicator">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
     <div class="form-container">
         <div class="form-wrapper">
             <!-- Header with logo -->
@@ -153,32 +652,46 @@
                 <img src="{{ url_for('static', filename='envirocare_logo.png') }}" 
                      alt="Envirocare Logo" 
                      class="brand-logo">
-                <h2 class="form-heading">Shelf Life Study Enquiry Form</h2>
+                <h2 class="form-heading">Shelf Life Study</h2>
+                <p class="form-subtitle">Complete the form below to submit your enquiry</p>
             </div>
             
             <!-- Form card -->
             <div class="card form-card">
+                <!-- Step Indicator -->
+                <div class="form-step-indicator">
+                    <div class="step active" data-step="1">1</div>
+                    <div class="step-line"></div>
+                    <div class="step" data-step="2">2</div>
+                    <div class="step-line"></div>
+                    <div class="step" data-step="3">3</div>
+                </div>
+
                 <form action="/customer_form" method="POST" id="enquiryForm">
                     <!-- Contact Information -->
-                    <div class="card section-card">
-                        <div class="card-header">Contact Information</div>
+                    <div class="card section-card fade-in">
+                        <div class="card-header">
+                            <i class="fas fa-user-circle mr-2"></i>
+                            Contact Information
+                            <div class="section-number">1</div>
+                        </div>
                         <div class="card-body">
                             <div class="form-group">
                                 <label class="required-label">Company Name</label>
-                                <input type="text" name="company" class="form-control" required>
+                                <input type="text" name="company" class="form-control" required placeholder="">
                             </div>
                             
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="required-label">Contact Person</label>
-                                        <input type="text" name="contact_person" class="form-control" required>
+                                        <input type="text" name="contact_person" class="form-control" required placeholder="">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="required-label">Designation</label>
-                                        <input type="text" name="designation" class="form-control" required>
+                                        <input type="text" name="designation" class="form-control" required placeholder="">
                                     </div>
                                 </div>
                             </div>
@@ -187,13 +700,13 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="required-label">Contact Number</label>
-                                        <input type="tel" name="phone" class="form-control" required>
+                                        <input type="tel" name="phone" class="form-control" required placeholder="">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="required-label">Email ID</label>
-                                        <input type="email" name="email" class="form-control" required>
+                                        <input type="email" name="email" class="form-control" required placeholder="">
                                     </div>
                                 </div>
                             </div>
@@ -201,35 +714,38 @@
                     </div>
 
                     <!-- Product Information (Dynamic) -->
-                    <div class="card section-card">
-                        <div class="card-header">Product Information</div>
+                    <div class="card section-card slide-up">
+                        <div class="card-header">
+                            <i class="fas fa-box mr-2"></i>
+                            Product Information
+                            <div class="section-number">2</div>
+                        </div>
                         <div class="card-body">
                             <div id="productContainers">
                                 <!-- First product section -->
                                 <div class="product-section" id="product1">
-                                    <div class="float-right">
-                                        <span class="remove-product" onclick="removeProduct(1)">Remove Product</span>
+                                    <div class="remove-product" onclick="removeProduct(1)">
+                                        <i class="fas fa-trash mr-1"></i>Remove
                                     </div>
+                                    
                                     <div class="form-group">
                                         <label class="required-label">Product Name</label>
-                                        <input type="text" name="product_name[]" class="form-control" required>
+                                        <input type="text" name="product_name[]" class="form-control" required placeholder="Enter product name">
                                     </div>
 
                                     <div class="form-group">
                                         <label class="required-label">List of Ingredients</label>
-                                        <small style="color: gray; display: block; margin-top: 1px; margin-bottom: 1px;">
-                                            Major Ingredients (more than 5%)
-                                        </small>
-                                          <small style="color: gray; display: block; margin-top: 1px; margin-bottom: 1px;">
-                                            All submitted information will be kept strictly confidential and used only for study purposes
-                                        </small>  
-                                        <textarea name="ingredients[]" class="form-control" rows="3" required></textarea>
+                                        <div class="alert alert-info" style="font-size: 0.85rem; padding: 8px 12px; margin-bottom: 10px;">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Major Ingredients (more than 5%). All information will be kept strictly confidential.
+                                        </div>
+                                        <textarea name="ingredients[]" class="form-control" rows="3" required placeholder="List major ingredients..."></textarea>
                                     </div>
 
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label class="required-label">Product Category *</label>
+                                                <label class="required-label">Product Category</label>
                                                 <select name="category[]" class="form-control custom-select" required>
                                                     <option value="" selected disabled>-- Select Category --</option>
                                                     <option value="Dairy Products & Analogues">Dairy Products & Analogues</option>
@@ -248,7 +764,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label class="required-label">Packaging Material</label>
-                                                <input type="text" name="packaging[]" class="form-control" required>
+                                                <input type="text" name="packaging[]" class="form-control" required placeholder="e.g., PET bottle, Aluminum can">
                                             </div>
                                         </div>
                                     </div>
@@ -257,36 +773,44 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label class="required-label">Sample Quantity (Weight)</label>
-                                                <input type="text" name="quantity[]" class="form-control" required>
+                                                <input type="text" name="quantity[]" class="form-control" required placeholder="e.g., 500g, 1kg">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label class="required-label">Packaging Dimensions</label>
-                                                <input type="text" name="dimensions[]" class="form-control" required>
+                                                <input type="text" name="dimensions[]" class="form-control" required placeholder="e.g., 10x5x15 cm">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Expected Shelf Life</label>
-                                                <input type="text" name="expected_shelf_life[]" class="form-control">
+                                                <input type="text" name="expected_shelf_life[]" class="form-control" placeholder="e.g., 6 months">
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="required-label">Storage Conditions *</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input storage-condition" type="radio" name="storage_condition_1" value="ambient" id="ambient1" checked>
-                                            <label class="form-check-label" for="ambient1">Ambient</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input storage-condition" type="radio" name="storage_condition_1" value="refrigerated" id="refrigerated1">
-                                            <label class="form-check-label" for="refrigerated1">Refrigerated</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input storage-condition" type="radio" name="storage_condition_1" value="frozen" id="frozen1">
-                                            <label class="form-check-label" for="frozen1">Frozen</label>
+                                        <label class="required-label">Storage Conditions</label>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input storage-condition" type="radio" name="storage_condition_1" value="ambient" id="ambient1" checked>
+                                                    <label class="form-check-label" for="ambient1">Ambient</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input storage-condition" type="radio" name="storage_condition_1" value="refrigerated" id="refrigerated1">
+                                                    <label class="form-check-label" for="refrigerated1">Refrigerated</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input storage-condition" type="radio" name="storage_condition_1" value="frozen" id="frozen1">
+                                                    <label class="form-check-label" for="frozen1">Frozen</label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -296,91 +820,256 @@
                                             <option value="" selected disabled>-- Select Requirement --</option>
                                             <option value="ambient-real-time">Real Time: 25℃ 60%RH</option>
                                             <option value="ambient-accelerated">Accelerated: 40℃ 75%RH</option>
-                                            
                                             <option value="refrigerated-real-time" style="display: none;">Real Time: 1 to 4℃</option>
-                                            
                                             <option value="frozen-real-time" style="display: none;">Real Time: -18℃</option>
                                             <option value="other" style="display: none;">Other</option>
                                         </select>
-                                        <input type="text" name="custom_temp_humidity[]" class="form-control" style="display: none;">
+                                        <input type="text" name="custom_temp_humidity[]" class="form-control mt-2" style="display: none;" placeholder="Specify custom requirements">
                                     </div>
 
                                     <div class="form-group">
                                         <label>Number of Pull Outs</label>
-                                        <input type="text" name="pullout[]" class="form-control">
+                                        <input type="text" name="pullout[]" class="form-control" placeholder="e.g., 5, 10">
                                     </div>
 
                                     <!-- Study Details for this product -->
                                     <div class="form-group">
                                         <label class="required-label">Reason for Shelf Life Testing</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="reason_1" value="New Product" id="new_product_1" required>
-                                            <label class="form-check-label" for="new_product_1">New Product</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="reason_1" value="Change in Formula" id="formula_change_1">
-                                            <label class="form-check-label" for="formula_change_1">Change in Formula/Ingredients/Processing/Packaging</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="reason_1" value="Verification" id="verification_1">
-                                            <label class="form-check-label" for="verification_1">Verification of Current Shelf Life</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="reason_1" value="FSSA" id="fssa_1">
-                                            <label class="form-check-label" for="fssa_1">FSSA (Non-compliance Case)</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="reason_1" value="New Product" id="new_product_1" required>
+                                                    <label class="form-check-label" for="new_product_1">New Product</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="reason_1" value="Change in Formula" id="formula_change_1">
+                                                    <label class="form-check-label" for="formula_change_1">Change in Formula/Ingredients/Processing/Packaging</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="reason_1" value="Verification" id="verification_1">
+                                                    <label class="form-check-label" for="verification_1">Verification of Current Shelf Life</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="reason_1" value="FSSA" id="fssa_1">
+                                                    <label class="form-check-label" for="fssa_1">FSSA (Non-compliance Case)</label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div class="form-group">
                                         <label class="required-label">Analysis Type</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="analysis_type_1" value="Microbiological" id="micro_1">
-                                            <label class="form-check-label" for="micro_1">Microbiological</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="analysis_type_1" value="Chemical" id="chemical_1">
-                                            <label class="form-check-label" for="chemical_1">Chemical</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="analysis_type_1" value="Sensory" id="sensory_1">
-                                            <label class="form-check-label" for="sensory_1">Sensory</label>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="analysis_type_1" value="Microbiological" id="micro_1">
+                                                    <label class="form-check-label" for="micro_1">
+                                                        <i class="fas fa-microscope mr-1"></i>Microbiological
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="analysis_type_1" value="Chemical" id="chemical_1">
+                                                    <label class="form-check-label" for="chemical_1">
+                                                        <i class="fas fa-flask mr-1"></i>Chemical
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="analysis_type_1" value="Sensory" id="sensory_1">
+                                                    <label class="form-check-label" for="sensory_1">
+                                                        <i class="fas fa-hand-paper mr-1"></i>Sensory
+                                                    </label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div class="form-group">
                                         <label>Label Claims (if any)</label>
-                                        <textarea name="label_claims_1" class="form-control" rows="3"></textarea>
+                                        <textarea name="label_claims_1" class="form-control" rows="3" placeholder="List any specific label claims..."></textarea>
                                     </div>
                                 </div>
                             </div>
                             
-                            <button type="button" class="btn btn-primary add-product" onclick="addProduct()">Add Product</button>
+                            <div class="add-product text-center">
+                                <button type="button" class="btn btn-add-product" onclick="addProduct()">
+                                    <i class="fas fa-plus mr-2"></i>Add Another Product
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <form>
-                        <div class="text-center mt-4">
-                        <button type="submit" id="submitBtn" class="btn btn-brand btn-brand-lg">Submit Enquiry</button>
+                    <!-- Submit Section -->
+                    <div class="card section-card slide-up">
+                        <div class="card-header">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Submit Enquiry
+                            <div class="section-number">3</div>
+                        </div>
+                        <div class="card-body text-center">
+                            <p class="text-muted mb-4">Please review all information before submitting your enquiry.</p>
+                            <button type="submit" id="submitBtn" class="btn btn-brand btn-brand-lg">
+                                <i class="fas fa-paper-plane mr-2"></i>Submit Enquiry
+                            </button>
+                        </div>
                     </div>
-                    </form>
                 </form>
             </div>
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         let productCount = 1;
+        let currentStep = 1;
 
-        const form=document.querySelector('form')
-        const submitBtn = document.getElementById('submitBtn')
+        // Progress tracking
+        function updateProgress() {
+            const totalSections = document.querySelectorAll('.section-card').length;
+            const progress = (currentStep / totalSections) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
 
-        form.addEventListener('submit', function (e) {
-            console.log("Hello");
-            submitBtn.disabled = true
-            submitBtn.textContent = 'Submitting...'
-        })
+        // Step indicator
+        function updateStepIndicator() {
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                } else if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+        }
 
-        
+        // Form validation and step navigation
+        function validateStep(step) {
+            const section = document.querySelectorAll('.section-card')[step - 1];
+            const requiredFields = section.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            return isValid;
+        }
+
+        // Smooth scrolling to sections
+        function scrollToSection(step) {
+            const section = document.querySelectorAll('.section-card')[step - 1];
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Form submission with loading
+        document.getElementById('enquiryForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            
+            if (!validateStep(1) || !validateStep(2)) {
+                alert('Please fill in all required fields before submitting.');
+                return;
+            }
+
+            showLoading();
+            
+            const products = [];
+            const form = document.getElementById("enquiryForm");
+            const contactInfo = {
+                company: form.querySelector('input[name="company"]').value,
+                contact_person: form.querySelector('input[name="contact_person"]').value,
+                designation: form.querySelector('input[name="designation"]').value,
+                phone: form.querySelector('input[name="phone"]').value,
+                email: form.querySelector('input[name="email"]').value
+            };
+            const guide = "";
+
+            document.querySelectorAll(".product-section").forEach((section, index) => {
+                const tempHumiditySelect = section.querySelector('select[name="temp_humidity[]"]');
+                const selectedOption = tempHumiditySelect.options[tempHumiditySelect.selectedIndex];
+
+                const product = {
+                    product_name: section.querySelector('input[name="product_name[]"]').value,
+                    ingredients: section.querySelector('textarea[name="ingredients[]"]').value,
+                    category: section.querySelector('select[name="category[]"]').value,
+                    packaging: section.querySelector('input[name="packaging[]"]').value,
+                    quantity: section.querySelector('input[name="quantity[]"]').value,
+                    dimensions: section.querySelector('input[name="dimensions[]"]').value,
+                    expected_shelf_life: section.querySelector('input[name="expected_shelf_life[]"]').value,
+                    storage_condition: section.querySelector(`input[name="storage_condition_${index + 1}"]:checked`)?.value,
+                    temp_humidity: tempHumiditySelect.value,
+                    temp_humidity_label: selectedOption ? selectedOption.textContent : "",
+                    custom_temp_humidity: section.querySelector('input[name="custom_temp_humidity[]"]').value,
+                    pullout: section.querySelector('input[name="pullout[]"]').value,
+                    reason: section.querySelector(`input[name="reason_${index + 1}"]:checked`)?.value,
+                    analysis_type: Array.from(section.querySelectorAll(`input[name="analysis_type_${index + 1}"]:checked`)).map(el => el.value),
+                    label_claims: section.querySelector(`textarea[name="label_claims_${index + 1}"]`)?.value || ""
+                };
+
+                products.push(product);
+            });
+
+            fetch('/customer_form', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ contact_info: contactInfo, products: products, guide: guide })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+                return response.json();
+            })
+            .then(data => {
+                hideLoading();
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    showSuccessMessage("Form submitted successfully!");
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+                showErrorMessage("There was an error submitting the form. Please try again.");
+            });
+        });
+
+        // Loading functions
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function showSuccessMessage(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'success-message';
+            alertDiv.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${message}`;
+            document.querySelector('.form-card').insertBefore(alertDiv, document.querySelector('.form-card').firstChild);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        function showErrorMessage(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'error-message';
+            alertDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${message}`;
+            document.querySelector('.form-card').insertBefore(alertDiv, document.querySelector('.form-card').firstChild);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        // Add product functionality
         function addProduct() {
             productCount++;
             const productContainers = document.getElementById('productContainers');
@@ -388,30 +1077,29 @@
             newProductSection.className = 'product-section';
             newProductSection.id = `product${productCount}`;
             
-            newProductSection.innerHTML = `
-                <div class="float-right">
-                    <span class="remove-product" onclick="removeProduct(${productCount})">Remove Product</span>
+            newProductSection.innerHTML = 
+                `<div class="remove-product" onclick="removeProduct(${productCount})">
+                    <i class="fas fa-trash mr-1"></i>Remove
                 </div>
+                
                 <div class="form-group">
                     <label class="required-label">Product Name</label>
-                    <input type="text" name="product_name[]" class="form-control" required>
+                    <input type="text" name="product_name[]" class="form-control" required placeholder="Enter product name">
                 </div>
 
                 <div class="form-group">
                     <label class="required-label">List of Ingredients</label>
-                     <small style="color: gray; display: block; margin-top: 1px; margin-bottom: 1px;">
-                                            Major Ingredients (more than 5%)
-                                        </small>
-                                          <small style="color: gray; display: block; margin-top: 1px; margin-bottom: 1px;">
-                                            All submitted information will be kept strictly confidential and used only for study purposes
-                                        </small>  
-                    <textarea name="ingredients[]" class="form-control" rows="3" required></textarea>
+                    <div class="alert alert-info" style="font-size: 0.85rem; padding: 8px 12px; margin-bottom: 10px;">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Major Ingredients (more than 5%). All information will be kept strictly confidential.
+                    </div>
+                    <textarea name="ingredients[]" class="form-control" rows="3" required placeholder="List major ingredients..."></textarea>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="required-label">Product Category *</label>
+                            <label class="required-label">Product Category</label>
                             <select name="category[]" class="form-control custom-select" required>
                                 <option value="" selected disabled>-- Select Category --</option>
                                 <option value="Dairy Products & Analogues">Dairy Products & Analogues</option>
@@ -430,7 +1118,7 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="required-label">Packaging Material</label>
-                            <input type="text" name="packaging[]" class="form-control" required>
+                            <input type="text" name="packaging[]" class="form-control" required placeholder="e.g., PET bottle, Aluminum can">
                         </div>
                     </div>
                 </div>
@@ -439,36 +1127,50 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="required-label">Sample Quantity (Weight)</label>
-                            <input type="text" name="quantity[]" class="form-control" required>
+                            <input type="text" name="quantity[]" class="form-control" required placeholder="e.g., 500g, 1kg">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="required-label">Packaging Dimensions</label>
-                            <input type="text" name="dimensions[]" class="form-control" required>
+                            <input type="text" name="dimensions[]" class="form-control" required placeholder="e.g., 10x5x15 cm">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Expected Shelf Life</label>
-                            <input type="text" name="expected_shelf_life[]" class="form-control">
+                            <input type="text" name="expected_shelf_life[]" class="form-control" placeholder="e.g., 6 months">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="required-label">Storage Conditions *</label>
-                    <div class="form-check">
-                        <input class="form-check-input storage-condition" type="radio" name="storage_condition_${productCount}" value="ambient" id="ambient${productCount}" checked>
-                        <label class="form-check-label" for="ambient${productCount}">Ambient</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input storage-condition" type="radio" name="storage_condition_${productCount}" value="refrigerated" id="refrigerated${productCount}">
-                        <label class="form-check-label" for="refrigerated${productCount}">Refrigerated</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input storage-condition" type="radio" name="storage_condition_${productCount}" value="frozen" id="frozen${productCount}">
-                        <label class="form-check-label" for="frozen${productCount}">Frozen</label>
+                    <label class="required-label">Storage Conditions</label>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input storage-condition" type="radio" name="storage_condition_${productCount}" value="ambient" id="ambient${productCount}" checked>
+                                <label class="form-check-label" for="ambient${productCount}">
+                                    Ambient
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input storage-condition" type="radio" name="storage_condition_${productCount}" value="refrigerated" id="refrigerated${productCount}">
+                                <label class="form-check-label" for="refrigerated${productCount}">
+                                    Refrigerated
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input storage-condition" type="radio" name="storage_condition_${productCount}" value="frozen" id="frozen${productCount}">
+                                <label class="form-check-label" for="frozen${productCount}">
+                                    Frozen
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -478,109 +1180,125 @@
                         <option value="" selected disabled>-- Select Requirement --</option>
                         <option value="ambient-real-time">Real Time: 25℃ 60%RH</option>
                         <option value="ambient-accelerated">Accelerated: 40℃ 75%RH</option>
-                        
                         <option value="refrigerated-real-time" style="display: none;">Real Time: 1 to 4℃</option>
-                        
                         <option value="frozen-real-time" style="display: none;">Real Time: -18℃</option>
                         <option value="other" style="display: none;">Other</option>
                     </select>
-                    <input type="text" name="custom_temp_humidity[]" class="form-control" style="display: none;">
+                    <input type="text" name="custom_temp_humidity[]" class="form-control mt-2" style="display: none;" placeholder="Specify custom requirements">
                 </div>
 
                 <div class="form-group">
                     <label>Number of Pull Outs</label>
-                    <input type="text" name="pullout[]" class="form-control">
+                    <input type="text" name="pullout[]" class="form-control" placeholder="e.g., 5, 10">
                 </div>
 
-                <!-- Study Details for this product -->
                 <div class="form-group">
                     <label class="required-label">Reason for Shelf Life Testing</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="reason_${productCount}" value="New Product" id="new_product_${productCount}" required>
-                        <label class="form-check-label" for="new_product_${productCount}">New Product</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="reason_${productCount}" value="Change in Formula" id="formula_change_${productCount}">
-                        <label class="form-check-label" for="formula_change_${productCount}">Change in Formula/Ingredients/Processing/Packaging</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="reason_${productCount}" value="Verification" id="verification_${productCount}">
-                        <label class="form-check-label" for="verification_${productCount}">Verification of Current Shelf Life</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="reason_${productCount}" value="FSSA" id="fssa_${productCount}">
-                        <label class="form-check-label" for="fssa_${productCount}">FSSA (Non-compliance Case)</label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reason_${productCount}" value="New Product" id="new_product_${productCount}" required>
+                                <label class="form-check-label" for="new_product_${productCount}">New Product</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reason_${productCount}" value="Change in Formula" id="formula_change_${productCount}">
+                                <label class="form-check-label" for="formula_change_${productCount}">Change in Formula/Ingredients/Processing/Packaging</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reason_${productCount}" value="Verification" id="verification_${productCount}">
+                                <label class="form-check-label" for="verification_${productCount}">Verification of Current Shelf Life</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reason_${productCount}" value="FSSA" id="fssa_${productCount}">
+                                <label class="form-check-label" for="fssa_${productCount}">FSSA (Non-compliance Case)</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="required-label">Analysis Type</label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="analysis_type_${productCount}" value="Microbiological" id="micro_${productCount}">
-                        <label class="form-check-label" for="micro_${productCount}">Microbiological</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="analysis_type_${productCount}" value="Chemical" id="chemical_${productCount}">
-                        <label class="form-check-label" for="chemical_${productCount}">Chemical</label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="analysis_type_${productCount}" value="Sensory" id="sensory_${productCount}">
-                        <label class="form-check-label" for="sensory_${productCount}">Sensory</label>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="analysis_type_${productCount}" value="Microbiological" id="micro_${productCount}">
+                                <label class="form-check-label" for="micro_${productCount}">
+                                    <i class="fas fa-microscope mr-1"></i>Microbiological
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="analysis_type_${productCount}" value="Chemical" id="chemical_${productCount}">
+                                <label class="form-check-label" for="chemical_${productCount}">
+                                    <i class="fas fa-flask mr-1"></i>Chemical
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="analysis_type_${productCount}" value="Sensory" id="sensory_${productCount}">
+                                <label class="form-check-label" for="sensory_${productCount}">
+                                    <i class="fas fa-hand-paper mr-1"></i>Sensory
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Label Claims (if any)</label>
-                    <textarea name="label_claims_${productCount}" class="form-control" rows="3"></textarea>
+                    <textarea name="label_claims_${productCount}" class="form-control" rows="3" placeholder="List any specific label claims..."></textarea>
                 </div>
             `;
             
             productContainers.appendChild(newProductSection);
+            
+            // Initialize storage condition functionality
             const selectedStorage = newProductSection.querySelector(`input[name="storage_condition_${productCount}"]:checked`);
             if (selectedStorage) {
                 updateTempHumidityOptions(newProductSection, selectedStorage.value);
             }
 
-            // ✅ Attach change listener to the new storage condition radios
             newProductSection.querySelectorAll(`input[name="storage_condition_${productCount}"]`).forEach(radio => {
                 radio.addEventListener("change", function () {
                     updateTempHumidityOptions(newProductSection, this.value);
                 });
             });
-            
-            // Initialize the new product's temp/humidity dropdown
         }
         
         function removeProduct(productId) {
             const productElement = document.getElementById(`product${productId}`);
-            productElement.remove();
-            
-            // Update IDs of remaining products
+            productElement.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => {
+                productElement.remove();
+                updateProductIds();
+            }, 300);
+        }
+
+        function updateProductIds() {
             const products = document.querySelectorAll('.product-section');
             products.forEach((product, index) => {
                 product.id = `product${index + 1}`;
                 const removeSpan = product.querySelector('.remove-product');
                 removeSpan.onclick = function() { removeProduct(index + 1); };
                 
-                // Update storage condition radio button names
                 const storageRadios = product.querySelectorAll('.storage-condition');
                 storageRadios.forEach(radio => {
                     radio.name = `storage_condition_${index + 1}`;
                 });
                 
-                // Update study details field names
                 const studyFields = product.querySelectorAll('[name^="reason_"], [name^="analysis_type_"], [name^="label_claims_"]');
                 studyFields.forEach(field => {
-                    const oldName = field.name;
                     const newSuffix = index + 1;
-                    const newId = field.id.replace(/\d+$/, newSuffix);
-                    
-                    field.name = oldName.replace(/\d+$/, newSuffix);
-                    field.id = newId;
+                    field.name = field.name.replace(/\d+$/, newSuffix);
+                    field.id = field.id.replace(/\d+$/, newSuffix);
                 });
             });
         }
-        
+
         // Temperature/humidity requirements functionality
         document.addEventListener('DOMContentLoaded', function() {
             const productSections = document.querySelectorAll('.product-section');
@@ -597,117 +1315,74 @@
                 }
             });
         });
+
         function updateTempHumidityOptions(section, storageCondition) {
-        const tempHumiditySelect = section.querySelector('select[name="temp_humidity[]"]');
-        const customTempInput = section.querySelector('input[name="custom_temp_humidity[]"]');
+            const tempHumiditySelect = section.querySelector('select[name="temp_humidity[]"]');
+            const customTempInput = section.querySelector('input[name="custom_temp_humidity[]"]');
 
-        const previousValue = tempHumiditySelect.value;
+            const previousValue = tempHumiditySelect.value;
 
-        // Hide all options except the placeholder
-        tempHumiditySelect.querySelectorAll('option').forEach(option => {
-            if (option.value !== '') {
-                option.style.display = 'none';
-            }
-        });
-
-        const showOptions = [];
-        if (storageCondition === 'ambient') {
-            showOptions.push('ambient-real-time', 'ambient-accelerated', 'other');
-        } else if (storageCondition === 'refrigerated') {
-            showOptions.push('refrigerated-real-time', 'other');
-        } else if (storageCondition === 'frozen') {
-            showOptions.push('frozen-real-time', 'other');
-        }
-
-        showOptions.forEach(value => {
-            const option = tempHumiditySelect.querySelector(`option[value="${value}"]`);
-            if (option) option.style.display = 'block';
-        });
-
-        if (!showOptions.includes(previousValue)) {
-            tempHumiditySelect.value = '';
-            customTempInput.style.display = 'none';
-        } else {
-            tempHumiditySelect.value = previousValue;
-            customTempInput.style.display = (previousValue === 'other') ? 'block' : 'none';
-        }
-
-        if (!tempHumiditySelect.dataset.listenerAttached) {
-            tempHumiditySelect.addEventListener('change', function () {
-                if (this.value === 'other') {
-                    customTempInput.style.display = 'block';
-                } else {
-                    customTempInput.style.display = 'none';
+            tempHumiditySelect.querySelectorAll('option').forEach(option => {
+                if (option.value !== '') {
+                    option.style.display = 'none';
                 }
             });
-            tempHumiditySelect.dataset.listenerAttached = "true";
-        }
-    }
 
-    document.getElementById("enquiryForm").addEventListener("submit", function (e) {
-        e.preventDefault(); // Prevent actual form submission
-
-        const products = [];
-        const form = document.getElementById("enquiryForm");
-        const contactInfo = {
-            company: form.querySelector('input[name="company"]').value,
-            contact_person: form.querySelector('input[name="contact_person"]').value,
-            designation: form.querySelector('input[name="designation"]').value,
-            phone: form.querySelector('input[name="phone"]').value,
-            email: form.querySelector('input[name="email"]').value
-        };
-        const guide=""
-
-        document.querySelectorAll(".product-section").forEach((section, index) => {
-            const tempHumiditySelect = section.querySelector('select[name="temp_humidity[]"]');
-            const selectedOption = tempHumiditySelect.options[tempHumiditySelect.selectedIndex];
-
-            const product = {
-                product_name: section.querySelector('input[name="product_name[]"]').value,
-                ingredients: section.querySelector('textarea[name="ingredients[]"]').value,
-                category: section.querySelector('select[name="category[]"]').value,
-                packaging: section.querySelector('input[name="packaging[]"]').value,
-                quantity: section.querySelector('input[name="quantity[]"]').value,
-                dimensions: section.querySelector('input[name="dimensions[]"]').value,
-                expected_shelf_life: section.querySelector('input[name="expected_shelf_life[]"]').value,
-                storage_condition: section.querySelector(`input[name="storage_condition_${index + 1}"]:checked`)?.value,
-                temp_humidity: tempHumiditySelect.value,
-                temp_humidity_label: selectedOption ? selectedOption.textContent : "",
-                custom_temp_humidity: section.querySelector('input[name="custom_temp_humidity[]"]').value,
-                pullout: section.querySelector('input[name="pullout[]"]').value,
-                reason: section.querySelector(`input[name="reason_${index + 1}"]:checked`)?.value,
-                analysis_type: Array.from(section.querySelectorAll(`input[name="analysis_type_${index + 1}"]:checked`)).map(el => el.value),
-                label_claims: section.querySelector(`textarea[name="label_claims_${index + 1}"]`)?.value || ""
-            };
-
-            products.push(product);
-        });
-        console.log(products)
-
-        fetch('/customer_form', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ contact_info: contactInfo, products: products,guide:guide })
-        })
-        .then(response => {
-            if (!response.ok) throw new Error("Network response was not ok");
-            return response.json();
-        })
-        .then(data => {
-            if (data.redirect_url) {
-                window.location.href = data.redirect_url;
-            } else {
-                alert("Form submitted successfully.");
+            const showOptions = [];
+            if (storageCondition === 'ambient') {
+                showOptions.push('ambient-real-time', 'ambient-accelerated', 'other');
+            } else if (storageCondition === 'refrigerated') {
+                showOptions.push('refrigerated-real-time', 'other');
+            } else if (storageCondition === 'frozen') {
+                showOptions.push('frozen-real-time', 'other');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("There was an error submitting the form.");
-        });
-    });
 
+            showOptions.forEach(value => {
+                const option = tempHumiditySelect.querySelector(`option[value="${value}"]`);
+                if (option) option.style.display = 'block';
+            });
+
+            if (!showOptions.includes(previousValue)) {
+                tempHumiditySelect.value = '';
+                customTempInput.style.display = 'none';
+            } else {
+                tempHumiditySelect.value = previousValue;
+                customTempInput.style.display = (previousValue === 'other') ? 'block' : 'none';
+            }
+
+            if (!tempHumiditySelect.dataset.listenerAttached) {
+                tempHumiditySelect.addEventListener('change', function () {
+                    if (this.value === 'other') {
+                        customTempInput.style.display = 'block';
+                    } else {
+                        customTempInput.style.display = 'none';
+                    }
+                });
+                tempHumiditySelect.dataset.listenerAttached = "true";
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            updateStepIndicator();
+        });
+
+        // Add CSS for slide out animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOutRight {
+                from {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

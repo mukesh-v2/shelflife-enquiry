@@ -116,9 +116,26 @@
             <img src="{{ url_for('static', filename='envirocare_logo.png') }}" alt="Envirocare Logo" style="max-height: 60px; margin-right: 10px;">
             Shelf Life Study Portal
         </a>
-        <div class="ml-auto">
-            <a href="/dashboard" class="btn btn-light">Dashboard</a>
-            <a href="/logout" class="btn btn-light ml-2">Logout</a>
+        <div class="ml-auto d-flex align-items-center">
+            <span class="text-white mr-3">Hello, {{ session.get('username', 'User') }}</span>
+            <div class="dropdown mr-2">
+                <button class="btn btn-light dropdown-toggle" type="button" id="analyticsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-chart-bar mr-1"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="analyticsDropdown">
+                    <a class="dropdown-item" href="/analytics">Dashboard Analytics</a>
+                    <a class="dropdown-item" href="/mis-export">MIS</a>
+                </div>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle" type="button" id="accountDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-user-circle mr-1"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
+                    <a class="dropdown-item" href="/dashboard">Dashboard</a>
+                    <a class="dropdown-item" href="/logout">Logout</a>
+                </div>
+            </div>
         </div>
     </div>
 </nav>
@@ -309,6 +326,28 @@
 
 
 </script>
+{% include 'loading_overlay.html' %}
 
+<script>
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    // Show loading for any navigation
+    document.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A' && e.target.href && !e.target.href.includes('#')) {
+            showLoading();
+        }
+    });
+
+    // Hide loading when page loads
+    window.addEventListener('load', function() {
+        hideLoading();
+    });
+</script>
 </body>
 </html>

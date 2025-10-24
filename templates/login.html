@@ -80,5 +80,27 @@
             </div>
         </div>
     </div>
+    {% include 'loading_overlay.html' %}
+    <script>
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    // Show loading for any navigation
+    document.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A' && e.target.href && !e.target.href.includes('#')) {
+            showLoading();
+        }
+    });
+
+    // Hide loading when page loads
+    window.addEventListener('load', function() {
+        hideLoading();
+    });
+    </script>
 </body>
 </html>
