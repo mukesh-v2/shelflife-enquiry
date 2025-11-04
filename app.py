@@ -78,49 +78,76 @@ def customer_form():
     if request.method == 'POST':
         try:
             data = request.get_json()
-            print("💡 Received data:", data)  # Add this for debugging
-
-            # Contact info
+            print("Received data:", data)  # Debugging
+            
+            # Contact info validation
             contact_info = data.get('contact_info', {})
             if not contact_info:
-                return jsonify({'status': 'error', 'message': 'Missing contact information'}), 400
-
-            # Products
+                return jsonify(status='error', message='Missing contact information'), 400
+            
+            # Products validation - ENHANCED
             products = data.get('products', [])
+            
+            # Check if products is a list
             if not isinstance(products, list):
-                return jsonify({'status': 'error', 'message': 'Invalid format: products must be a list'}), 400
-
-            for product in products:
+                return jsonify(status='error', message='Invalid format: products must be a list'), 400
+            
+            # Check if products array is not empty
+            if len(products) == 0:
+                return jsonify(status='error', message='At least one product is required'), 400
+            
+            # Validate each product has required fields
+            required_product_fields = ['product_name', 'ingredients', 'category', 'packaging', 
+                                      'quantity', 'storage_condition', 'reason', 'analysis_type']
+            
+            for idx, product in enumerate(products):
                 if not isinstance(product, dict):
-                    return jsonify({'status': 'error', 'message': 'Each product must be a dictionary'}), 400
+                    return jsonify(status='error', message=f'Product {idx+1} must be a dictionary'), 400
+                
+                # Check for required fields
+                for field in required_product_fields:
+                    if field not in product or not product[field]:
+                        return jsonify(status='error', message=f'Product {idx+1}: Missing required field "{field}"'), 400
+                
+                # Ensure analysis_type is a list and not empty
+                analysis_type = product.get('analysis_type')
+                if not isinstance(analysis_type, list) or len(analysis_type) == 0:
+                    return jsonify(status='error', message=f'Product {idx+1}: At least one analysis type is required'), 400
+                
+                # Set timestamps
                 product['created_at'] = datetime.now(ZoneInfo("Asia/Kolkata"))
                 product['status'] = 'Received'
-
-            guide_by=data.get('guide','')
-            # Insert
+            
+            guide_by = data.get('guide', '')
+            
+            # Create enquiry document
             enquiry_doc = {
-                "contact_info": contact_info,
-                "products": products,
-                "created_at": datetime.now(ZoneInfo("Asia/Kolkata")),
+                'contact_info': contact_info,
+                'products': products,
+                'created_at': datetime.now(ZoneInfo("Asia/Kolkata")),
                 'current_stage': 'Enquiry Received',
-                "guide_by":guide_by,
+                'guide_by': guide_by,
                 'history': [{
-                'stage': 'Enquiry Received',
-                'date': datetime.now(ZoneInfo("Asia/Kolkata")),
-                'changed_by': 'Customer',
-                'notes': 'Initial enquiry submitted'
-            }]
+                    'stage': 'Enquiry Received',
+                    'date': datetime.now(ZoneInfo("Asia/Kolkata")),
+                    'changed_by': 'Customer',
+                    'notes': 'Initial enquiry submitted'
+                }]
             }
-
-            db.enquiries.insert_one(enquiry_doc)
-
-            return jsonify({'status': 'success', 'redirect_url': url_for('thank_you')})
-
+            
+            # Insert into database
+            result = db.enquiries.insert_one(enquiry_doc)
+            if not result.acknowledged or not result.inserted_id:
+                return jsonify(status='error', message='Database insert not acknowledged'), 500
+            print(f"Enquiry inserted with ID: {result.inserted_id}")
+            
+            return jsonify(status='success', redirect_url=url_for('thank_you'))
+            
         except Exception as e:
             import traceback
             traceback.print_exc()
-            return jsonify({'status': 'error', 'message': str(e)}), 500
-
+            return jsonify(status='error', message=str(e)), 500
+    
     return render_template('customer_form.html')
 
 
@@ -630,6 +657,17 @@ def mis_report():
     df.to_excel(filename, index=False)
     from flask import send_file
     return send_file(filename, as_attachment=True)
+
+@app.template_filter('hum_temp_label')
+def hum_temp_label(code):
+    mapping = {
+        'ambient-real-time': 'Real Time: 25℃ 60%RH',
+        'ambient-accelerated': 'Accelerated: 40℃ 75%RH',
+        'refrigerated-real-time': 'Real Time: 1–4℃',
+        'frozen-real-time': 'Real Time: -18℃',
+        'other': 'Other'
+    }
+    return mapping.get(code or '', '')
 
 @app.route('/mis-export')
 @login_required

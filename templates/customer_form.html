@@ -972,78 +972,85 @@
         }
 
         // Form submission with loading
-        document.getElementById('enquiryForm').addEventListener('submit', function (e) {
+        document.getElementById('enquiryForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
             if (!validateStep(1) || !validateStep(2)) {
                 alert('Please fill in all required fields before submitting.');
                 return;
             }
-
             showLoading();
-            
-            const products = [];
-            const form = document.getElementById("enquiryForm");
-            const contactInfo = {
-                company: form.querySelector('input[name="company"]').value,
-                contact_person: form.querySelector('input[name="contact_person"]').value,
-                designation: form.querySelector('input[name="designation"]').value,
-                phone: form.querySelector('input[name="phone"]').value,
-                email: form.querySelector('input[name="email"]').value
-            };
-            const guide = "";
-
-            document.querySelectorAll(".product-section").forEach((section, index) => {
-                const tempHumiditySelect = section.querySelector('select[name="temp_humidity[]"]');
-                const selectedOption = tempHumiditySelect.options[tempHumiditySelect.selectedIndex];
-
-                const product = {
-                    product_name: section.querySelector('input[name="product_name[]"]').value,
-                    ingredients: section.querySelector('textarea[name="ingredients[]"]').value,
-                    category: section.querySelector('select[name="category[]"]').value,
-                    packaging: section.querySelector('input[name="packaging[]"]').value,
-                    quantity: section.querySelector('input[name="quantity[]"]').value,
-                    dimensions: section.querySelector('input[name="dimensions[]"]').value,
-                    expected_shelf_life: section.querySelector('input[name="expected_shelf_life[]"]').value,
-                    storage_condition: section.querySelector(`input[name="storage_condition_${index + 1}"]:checked`)?.value,
-                    temp_humidity: tempHumiditySelect.value,
-                    temp_humidity_label: selectedOption ? selectedOption.textContent : "",
-                    custom_temp_humidity: section.querySelector('input[name="custom_temp_humidity[]"]').value,
-                    pullout: section.querySelector('input[name="pullout[]"]').value,
-                    reason: section.querySelector(`input[name="reason_${index + 1}"]:checked`)?.value,
-                    analysis_type: Array.from(section.querySelectorAll(`input[name="analysis_type_${index + 1}"]:checked`)).map(el => el.value),
-                    label_claims: section.querySelector(`textarea[name="label_claims_${index + 1}"]`)?.value || ""
+            try {
+                const form = this;
+                const contactInfo = {
+                    company: form.querySelector('input[name="company"]').value.trim(),
+                    contact_person: form.querySelector('input[name="contact_person"]').value.trim(),
+                    designation: form.querySelector('input[name="designation"]').value.trim(),
+                    phone: form.querySelector('input[name="phone"]').value.trim(),
+                    email: form.querySelector('input[name="email"]').value.trim()
                 };
+                const guide = '';
+                const productSections = document.querySelectorAll('.product-section');
+                const products = [];
+                productSections.forEach((section, index) => {
+                    const i = index + 1;
+                    const getVal = (sel) => (section.querySelector(sel)?.value || '').trim();
+                    const getCheckedVals = (sel) =>
+                    Array.from(section.querySelectorAll(sel + ':checked')).map(el => el.value);
+                    const product = {
+                        // 🔑 Field names exactly as your backend expects
+                        product_name:           getVal('input[name="product_name[]"]'),
+                        ingredients:            getVal('textarea[name="ingredients[]"]'),
+                        category:               getVal('select[name="category[]"]'),
+                        packaging:              getVal('input[name="packaging[]"]'),
+                        quantity:               getVal('input[name="quantity[]"]'), 
+                        dimensions:             getVal('input[name="dimensions[]"]'),
+                        expected_shelf_life:    getVal('input[name="expected_shelf_life[]"]'),
+                        storage_condition:      section.querySelector(`input[name="storage_condition_${i}"]:checked`)?.value || '',
+                        temp_humidity:          getVal('select[name="temp_humidity[]"]'),
+                        custom_temp_humidity:   getVal('input[name="custom_temp_humidity[]"]'),
+                        pullout:                getVal('input[name="pullout[]"]'),
+                        reason:                 section.querySelector(`input[name="reason_${i}"]:checked`)?.value || '',
+                        analysis_type:          getCheckedVals(`input[name="analysis_type_${i}"]`),
+                        label_claims:           getVal(`textarea[name="label_claims_${i}"]`)
+                    };
+                    const required = ['product_name','ingredients','category','packaging','quantity','storage_condition','reason'];
+                    for (const key of required) {
+                        if (!product[key]) {
+                            throw new Error(`Product ${i}: Missing required field "${key.replaceAll('_',' ')}"`);
+                        }
+                    }
+                    if (product.analysis_type.length === 0) {
+                        throw new Error(`Product ${i}: Select at least one analysis type`);
+                    }
 
-                products.push(product);
-            });
-
-            fetch('/customer_form', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ contact_info: contactInfo, products: products, guide: guide })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error("Network response was not ok");
-                return response.json();
-            })
-            .then(data => {
-                hideLoading();
+                    products.push(product);
+                }); 
+                if (products.length === 0) {
+                    throw new Error('Please add at least one product before submitting.');
+                }
+                const res = await fetch('/customer_form', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contact_info: contactInfo, products, guide })
+                });
+                let data = {};
+                try { data = await res.json(); } catch (_) {}
+                if (!res.ok) {
+                    throw new Error(data.message || 'Error submitting form. Please check all fields.');
+                }
                 if (data.redirect_url) {
                     window.location.href = data.redirect_url;
                 } else {
-                    showSuccessMessage("Form submitted successfully!");
+                    showSuccessMessage('Form submitted successfully!');
                 }
-            })
-            .catch(error => {
+            } catch (err) {
+                console.error(err);
+                showErrorMessage(err.message || 'Submission failed.');
+            } finally {
+                // ✅ Always close the loader, even on validation/JS errors
                 hideLoading();
-                console.error('Error:', error);
-                showErrorMessage("There was an error submitting the form. Please try again.");
-            });
+            }
         });
-
         // Loading functions
         function showLoading() {
             document.getElementById('loadingOverlay').style.display = 'flex';

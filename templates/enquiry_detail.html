@@ -255,7 +255,7 @@
                             {% if product.temp_humidity_label == 'Other' %}
                             {{ product.custom_temp_humidity or 'N/A' }}
                             {% else %}
-                            {{ product.temp_humidity_label or 'N/A' }}
+                            {{ product.custom_temp_humidity or (product.temp_humidity | hum_temp_label) or 'N/A' }}
                             {% endif %}
                         </td>
                         </tr>
